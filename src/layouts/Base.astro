@@ -60,7 +60,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     </div>
 
     <div class="cursor-dot" aria-hidden="true"></div>
-    <div class="cursor-ring" aria-hidden="true"><span></span></div>
+    <div class="cursor-ring" aria-hidden="true"><svg data-k="drag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><svg data-k="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg><svg data-k="copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><svg data-k="done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
 
     <slot />
 
@@ -157,24 +157,35 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     border-color: var(--accent);
     background: var(--accent-soft);
   }
+  /* Icon morph: thin outline ring with a small accent icon for what a click/drag does */
   .has-cursor .cursor-ring.label {
-    width: 84px;
-    height: 84px;
+    width: 46px;
+    height: 46px;
     border-color: var(--accent);
-    background: var(--accent);
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    backdrop-filter: blur(4px);
   }
-  .cursor-ring span {
-    font: 600 0.66rem/1 var(--f-mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent-ink);
+  .cursor-ring svg {
+    grid-area: 1 / 1;
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
     opacity: 0;
-    scale: 0.6;
-    transition: opacity 0.25s, scale 0.4s var(--ease-out);
+    scale: 0.4;
+    rotate: -60deg;
+    transition:
+      opacity 0.25s,
+      scale 0.45s var(--ease-out),
+      rotate 0.6s var(--ease-out);
   }
-  .cursor-ring.label span {
+  .cursor-ring.label svg.on {
     opacity: 1;
     scale: 1;
+    rotate: 0deg;
+  }
+  /* Grabbing the globe spins the rotate icon */
+  .cursor-ring.press svg.on[data-k='drag'] {
+    rotate: -200deg;
   }
   .has-cursor .cursor-ring.press {
     scale: 0.82;

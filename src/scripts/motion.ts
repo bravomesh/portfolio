@@ -229,8 +229,11 @@ function cursor() {
   const dy = gsap.quickTo(dot, 'y', { duration: 0.1 });
   const rx = gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
   const ry = gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
-  const label = ring.querySelector('span')!;
+  const icons = [...ring.querySelectorAll<SVGElement>('svg')];
+  const show = (k: string) => icons.forEach((s) => s.classList.toggle('on', s.dataset.k === k));
+  const kindOf = (text: string) => (text === 'Drag' ? 'drag' : text === 'Copy' ? 'copy' : 'go');
   let mode = '';
+  let doneTimer = 0;
   // Re-evaluated on every move so labels that change in place (e.g. the globe's Drag → Open) update.
   addEventListener('pointermove', (e) => {
     dx(e.clientX);
@@ -246,9 +249,17 @@ function cursor() {
     ring.classList.toggle('label', !!text);
     dot.classList.toggle('hide', !!text || next === 'text');
     ring.classList.toggle('hide', next === 'text');
-    if (text) label.textContent = text;
+    if (text) show(kindOf(text));
   });
-  addEventListener('pointerdown', () => ring.classList.add('press'));
+  addEventListener('pointerdown', () => {
+    ring.classList.add('press');
+    if (mode === 'label:Copy') {
+      // Swap the copy glyph for a tick once the email is copied.
+      show('done');
+      clearTimeout(doneTimer);
+      doneTimer = window.setTimeout(() => mode === 'label:Copy' && show('copy'), 1600);
+    }
+  });
   addEventListener('pointerup', () => ring.classList.remove('press'));
   const root = document.documentElement;
   root.addEventListener('pointerleave', () => root.classList.add('cursor-out'));
