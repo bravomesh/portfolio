@@ -104,6 +104,7 @@ const slots = [
   const setActive = (i: number) => {
     if (i === active) return;
     active = i;
+    stack.style.setProperty('--ai', String(i));
     planes.forEach((p, j) => {
       p.classList.toggle('active', j === i);
       p.classList.toggle('above', j < i); // layers above the active one peel away
@@ -152,7 +153,7 @@ const slots = [
 
   const mm = gsap.matchMedia();
   mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
-    root.classList.add('is-pinned');
+    root.classList.add('is-pinned', 'is-live');
     const s = { gap: 14, rx: 64, rz: -48 };
     const tilt = { x: 0, y: 0 }; // mouse offset, -1..1
     const apply = () => {
@@ -212,10 +213,27 @@ const slots = [
       root.removeEventListener('pointermove', onMove);
       root.removeEventListener('pointerleave', onLeave);
       steps.forEach((b) => b.removeEventListener('click', onStep));
-      root.classList.remove('is-pinned', 'moved');
+      root.classList.remove('is-pinned', 'is-live', 'moved');
       stack.style.removeProperty('--gap');
       stack.style.removeProperty('--rx');
       stack.style.removeProperty('--rz');
+    };
+  });
+
+  // Phones/tablets: the stack sticks under the nav and follows whichever tool list you're reading.
+  mm.add('(max-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
+    root.classList.add('is-linked', 'is-live');
+    const triggers = panels.map((p, i) =>
+      ScrollTrigger.create({
+        trigger: p,
+        start: 'top 62%',
+        end: 'bottom 62%',
+        onToggle: (self) => self.isActive && setActive(i),
+      }),
+    );
+    return () => {
+      triggers.forEach((t) => t.kill());
+      root.classList.remove('is-linked', 'is-live');
     };
   });
 </script>
@@ -292,10 +310,10 @@ const slots = [
       box-shadow 0.6s,
       opacity 0.5s;
   }
-  .is-pinned .plane:not(.active) {
+  .is-live .plane:not(.active) {
     opacity: 0.5;
   }
-  .is-pinned .plane.above {
+  .is-live .plane.above {
     --lift: 80px;
     opacity: 0.1;
   }
@@ -303,20 +321,20 @@ const slots = [
   .pin {
     transition: opacity 0.35s;
   }
-  .is-pinned .plane:not(.active) .pin {
+  .is-live .plane:not(.active) .pin {
     opacity: 0;
     pointer-events: none;
   }
-  .is-pinned .plane:not(.active) .bulb {
+  .is-live .plane:not(.active) .bulb {
     scale: 0.3;
   }
-  .is-pinned .plane.active .pin {
+  .is-live .plane.active .pin {
     transition-delay: calc(0.12s + var(--j) * 0.06s);
   }
-  .is-pinned .plane.active .bulb {
+  .is-live .plane.active .bulb {
     transition-delay: calc(0.12s + var(--j) * 0.06s), calc(0.12s + var(--j) * 0.06s), 0s, 0s;
   }
-  .is-pinned .plane.active .pin.lit .bulb {
+  .is-live .plane.active .pin.lit .bulb {
     transition-delay: 0s; /* hover feedback is instant */
   }
   .plane.active {
@@ -474,7 +492,7 @@ const slots = [
   }
   @keyframes travel {
     0% {
-      top: 0%;
+      transform: translateY(0);
       opacity: 0;
     }
     15%,
@@ -482,12 +500,39 @@ const slots = [
       opacity: 0.9;
     }
     100% {
-      top: 92%;
+      transform: translateY(calc((3 * var(--gap) * 1px + 120px) * 0.92));
       opacity: 0;
     }
   }
 
   /* ---------- side panel ---------- */
+  /* ---------- phones/tablets: sticky stack that follows the list ---------- */
+  .is-linked .scene {
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 2;
+    height: 300px;
+    margin-inline: calc(var(--gutter) * -1);
+    background: linear-gradient(var(--bg) 80%, transparent);
+  }
+  .is-linked .stack {
+    --gap: 46;
+    width: min(46vw, 210px);
+    /* Glide so the active layer stays centred in the sticky area (clear of the nav and the list) */
+    translate: 0 calc(34px - var(--ai, 0) * 24px);
+    transition: translate 0.8s var(--ease-out);
+  }
+  .is-linked .io {
+    display: none;
+  }
+  .is-linked .panel {
+    opacity: 0.35;
+    transition: opacity 0.5s;
+  }
+  .is-linked .panel.active {
+    opacity: 1;
+  }
+
   .steps,
   .cue {
     display: none;

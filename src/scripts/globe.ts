@@ -1,4 +1,4 @@
-import { geoOrthographic, geoPath, geoGraticule10, geoDistance, geoContains } from 'd3-geo';
+import { geoOrthographic, geoPath, geoGraticule10, geoDistance, geoContains, geoCentroid, geoBounds } from 'd3-geo';
 import type { GeoPermissibleObjects } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
@@ -8,19 +8,34 @@ import type { View } from '../data/site';
 import { interpolateView } from './globe-math';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(pointer: coarse)').matches; // phones/tablets: lighter rendering
 
 type Country = Feature<Geometry, { name: string }>;
-type Geo = { countries: Country[]; land: GeoPermissibleObjects; borders: GeoPermissibleObjects };
+type Geo = {
+  countries: Country[];
+  land: GeoPermissibleObjects;
+  borders: GeoPermissibleObjects;
+  cent: [number, number][]; // per-country centroid…
+  rad: number[]; // …and angular radius, for culling when zoomed in
+};
 
 function build(json: unknown): Geo {
   const topo = json as Topology<{ countries: GeometryCollection<{ name: string }> }>;
   const countries = (feature(topo, topo.objects.countries) as unknown as { features: Country[] }).features;
   // world-atlas leaves Somaliland without an ISO id; draw it as part of Somalia.
   for (const f of countries) if (!f.id && f.properties.name === 'Somaliland') f.id = '706';
+  const cent = countries.map((f) => geoCentroid(f) as [number, number]);
+  const rad = countries.map((f, i) => {
+    const [[x0, y0], [x1, y1]] = geoBounds(f);
+    if (x1 < x0) return Math.PI; // crosses the antimeridian: never cull
+    return Math.max(...[[x0, y0], [x1, y1], [x0, y1], [x1, y0]].map((p) => geoDistance(cent[i], p as [number, number])));
+  });
   return {
     countries,
     land: { type: 'FeatureCollection', features: countries } as GeoPermissibleObjects,
     borders: mesh(topo, topo.objects.countries, (a, b) => a !== b),
+    cent,
+    rad,
   };
 }
 
@@ -85,6 +100,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
   let visible = false;
   let dirty = true;
   let raf = 0;
+  let lastPaint = 0;
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
   let c: Record<string, string> = {};
 
@@ -109,7 +125,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
   };
 
   const resize = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 1.5); // 1.5× is crisp enough and far cheaper than 2×
+    const dpr = Math.min(devicePixelRatio || 1, coarse ? 1.25 : 1.5); // crisp enough, far cheaper than 2-3×
     w = canvas.clientWidth;
     h = canvas.clientHeight;
     for (const [cv, cx] of [[canvas, ctx], [layer, lctx]] as const) {
@@ -122,14 +138,33 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
   };
 
   // Level of detail: the light 1:110m map while moving, the 1:50m one once the globe settles.
-  const moving = () => !!flight || !!drag || inertia;
+  // After motion stops, the crisp full-detail redraw waits for idle time so it never stalls a scroll.
+  let settling = false;
+  const idle: (cb: () => void) => void =
+    'requestIdleCallback' in window ? (cb) => requestIdleCallback(cb, { timeout: 700 }) : (cb) => setTimeout(cb, 150);
+  const settle = () => {
+    settling = true;
+    idle(() => {
+      settling = false;
+      invalidate();
+    });
+  };
+  const moving = () => !!flight || !!drag || inertia || settling;
   const geo = () => (opts.detail && hi && !moving() ? hi : lo);
 
   function drawMap() {
     const g = geo();
+    const fast = moving(); // mid-motion: coarser curves, no fine borders/grid (invisible at speed)
     const R = r * view.scale;
     const cx = w / 2, cy = h / 2;
-    projection.translate([cx, cy]).scale(R).rotate([-view.lon, -view.lat]);
+    projection
+      .translate([cx, cy])
+      .scale(R)
+      .rotate([-view.lon, -view.lat])
+      // Adaptive resampling only pays off on the sparse 1:110m map at rest; the dense 1:50m map and
+      // mid-motion frames skip it (it was the single biggest cost per frame).
+      .precision(fast || drifting || g === hi ? 0 : 0.6)
+      .clipExtent([[-2, -2], [w + 2, h + 2]]); // skip geometry that's off-canvas when zoomed in
     const x = lctx;
     x.clearRect(0, 0, w, h);
 
@@ -159,12 +194,19 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
       x.stroke();
     };
 
+    // Zoomed in, only countries near the visible patch of globe get projected at all.
+    const halfDiag = Math.hypot(w, h) / 2;
+    const reach = R > halfDiag ? Math.asin(halfDiag / R) + 0.06 : Math.PI;
+    const centre: [number, number] = [view.lon, view.lat];
+    const vis = reach >= Math.PI ? g.countries : g.countries.filter((_, i) => geoDistance(g.cent[i], centre) - g.rad[i] < reach);
+    const culled = vis.length < g.countries.length;
+
     fill(sphere, c.ocean);
-    stroke(graticule, c.grat, 1);
-    fill(g.land, c.land);
-    fill(g.countries.filter((f) => opts.highlight.has(String(f.id))), c.hi);
-    if (activeIds.size) fill(g.countries.filter((f) => activeIds.has(String(f.id))), c.accent, 0.9);
-    stroke(g.borders, c.border, 0.6);
+    if (!fast) stroke(graticule, c.grat, 1);
+    fill(culled ? vis : g.land, c.land);
+    fill(vis.filter((f) => opts.highlight.has(String(f.id))), c.hi);
+    if (activeIds.size) fill(vis.filter((f) => activeIds.has(String(f.id))), c.accent, 0.9);
+    if (!fast) stroke(culled ? vis : g.borders, c.border, 0.6);
     if (hoverId) {
       const hov = g.countries.filter((f) => String(f.id) === hoverId);
       fill(hov, c.fg, 0.1);
@@ -206,6 +248,14 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
   function frame(t: number) {
     raf = 0;
     if (!visible || !w) return;
+    // Drift, beacons and fly-tos are time-based, so they can skip frames without changing speed:
+    // ~60fps max on desktops (120Hz screens would double the work), ~30fps on touch devices.
+    // Dragging stays at full rate so the globe tracks the pointer.
+    if (!drag && !inertia && !dirty && t - lastPaint < (coarse ? 32 : 15)) {
+      raf = requestAnimationFrame(frame);
+      return;
+    }
+    lastPaint = t;
     if (flight) {
       const p = Math.min(1, (t - flight.t0) / flight.ms);
       view = flight.f(ease(p));
@@ -215,6 +265,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
         base = view;
         flight.done();
         flight = null;
+        settle();
       }
     } else if (drag) {
       amp = 0; // view is moved by pointer events
@@ -225,6 +276,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
       if (Math.abs(vel.lon) + Math.abs(vel.lat) < 0.01) {
         inertia = false;
         lastInteract = t;
+        settle();
       }
       dirty = true;
     } else if (userMoved && t - lastInteract > IDLE_RETURN_MS) {
@@ -351,7 +403,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
     drag = null;
     canvas.classList.remove('grabbing');
     lastInteract = performance.now();
-    invalidate(); // redraw at full detail now that dragging stopped
+    settle(); // full detail once things are idle
     if (click) {
       const [x, y] = local(e);
       const b = beaconAt(x, y);

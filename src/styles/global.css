@@ -89,6 +89,7 @@ body::before {
     linear-gradient(90deg, var(--grat) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse at 50% 30%, #000 20%, transparent 75%);
+  transform: translateZ(0);
 }
 
 img,

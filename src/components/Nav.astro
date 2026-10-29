@@ -232,6 +232,14 @@ const links = [
   }
 
   @media (max-width: 920px) {
+    /* Phones/tablets: the bar stays put while scrolling */
+    .nav.hidden {
+      transform: none;
+    }
+    .nav::before {
+      backdrop-filter: none;
+      background: color-mix(in srgb, var(--bg) 94%, transparent);
+    }
     .links,
     .cta {
       display: none;
