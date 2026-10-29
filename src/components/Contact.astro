@@ -6,7 +6,7 @@ import { profile } from '../data/site';
 <section class="section contact" id="contact">
   <div class="rings" aria-hidden="true"></div>
   <div class="container">
-    <span class="eyebrow" data-reveal>06 — Contact</span>
+    <span class="eyebrow" data-reveal>06 · Contact</span>
     <h2 class="big" data-split>Let's build systems that <em>warn early</em>.</h2>
 
     <div class="grid">
@@ -113,7 +113,7 @@ import { profile } from '../data/site';
     e.preventDefault();
     const d = new FormData(form);
     const subject = `Hello from ${d.get('name')}`;
-    const body = `${d.get('message')}\n\n— ${d.get('name')} (${d.get('email')})`;
+    const body = `${d.get('message')}\n\nFrom ${d.get('name')} (${d.get('email')})`;
     location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
 </script>

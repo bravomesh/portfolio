@@ -1,5 +1,5 @@
 // Single source of truth for every fact and line of copy on the site.
-// Lines marked VERIFY are educated guesses — confirm or correct them.
+// Lines marked VERIFY are educated guesses: confirm or correct them.
 
 export type View = { lon: number; lat: number; scale: number }; // scale 1 = whole globe fits
 
@@ -26,7 +26,7 @@ export const profile = {
   role: 'Software Engineer → GIS & AI',
   headline: 'I build the software that <em>warns nations</em> before disasters strike.',
   pitch:
-    'Software engineer turned geospatial & AI developer. I build multi-hazard early warning platforms that turn satellite and climate data into decisions — live across 26 African countries.',
+    'Software engineer turned geospatial & AI developer. I build multi-hazard early warning platforms that turn satellite and climate data into decisions, live across 26 African countries.',
   location: 'Nairobi, Kenya',
   coords: { lat: -1.2921, lon: 36.8219 },
   experience: '3+ years', // VERIFY
@@ -59,7 +59,7 @@ export const platforms: Platform[] = [
     url: 'https://eahazardswatch.icpac.net/mapviewer/',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'The regional platform for monitoring extreme events across the Greater Horn — droughts, cyclones, desert locust infestations, heavy rainfall, floods and crop failures — with live extreme-rainfall, drought, agriculture and heat-stress layers.',
+      'The regional platform for monitoring extreme events across the Greater Horn, including droughts, cyclones, desert locust infestations, heavy rainfall, floods and crop failures, with live extreme-rainfall, drought, agriculture and heat-stress layers.',
     stack: ['Django', 'Wagtail CMS', 'PostGIS', 'Earth Engine', 'Docker'], // VERIFY
     languages: ['English', 'Swahili', 'Amharic', 'Arabic', 'French', 'Kinyarwanda', 'Chinese', 'Somali'],
     shot: 'eahw',
@@ -75,7 +75,7 @@ export const platforms: Platform[] = [
     url: 'https://sadc-int-mhews-413744588203.europe-west1.run.app/mapviewer/',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'Bringing the hazards-watch model to the 16 SADC member states — a shared map viewer for the Climate Services Centre, the Humanitarian & Emergency Operations Centre and the DRR Unit, alongside partners such as UNDRR, MapAction, iMMAP, FEWS NET and CCARDESA.',
+      'Bringing the hazards-watch model to the 16 SADC member states: a shared map viewer for the Climate Services Centre, the Humanitarian & Emergency Operations Centre and the DRR Unit, alongside partners such as UNDRR, MapAction, iMMAP, FEWS NET and CCARDESA.',
     stack: MHEWS_STACK,
     languages: ['English', 'Portuguese', 'French', 'Swahili'],
     shot: 'sadc',
@@ -89,9 +89,9 @@ export const platforms: Platform[] = [
     view: { lon: 46.5, lat: 6, scale: 4.2 },
     beacon: [45.32, 2.05],
     url: 'https://somhews-gov-so-cms-web-413744588203.europe-west1.run.app/mapviewer/',
-    role: 'ICPAC developers team — on-site at inception in Mogadishu',
+    role: 'ICPAC developers team, on-site at inception in Mogadishu',
     summary:
-      "S-MHEWS — Somalia's national multi-hazard early warning system, built on-site in Mogadishu with SoDMA. A MapLibre map viewer with observation, forecast, drought, agriculture, hydrology, cyclone and environment layers — plus exposure analysis for population, cropland, rangeland and built-up areas.",
+      "S-MHEWS, Somalia's national multi-hazard early warning system, built on-site in Mogadishu with SoDMA. A MapLibre map viewer with observation, forecast, drought, agriculture, hydrology, cyclone and environment layers, plus exposure analysis for population, cropland, rangeland and built-up areas.",
     stack: MHEWS_STACK,
     languages: ['Somali', 'Arabic', 'English', 'Oromo', 'Swahili'],
     shot: 'somalia',
@@ -107,7 +107,7 @@ export const platforms: Platform[] = [
     url: 'https://djibouti-mhews-413744588203.europe-west1.run.app/mapviewer',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      "Djibouti's national multi-hazard early warning system — an integrated platform for monitoring climate and environmental risks, enabling rapid awareness and early action nationwide. French-first, with rainfall, drought and heat-stress layers, shared by the Prime Minister's office, the meteorological agency and key ministries.",
+      "Djibouti's national multi-hazard early warning system: an integrated platform for monitoring climate and environmental risks, enabling rapid awareness and early action nationwide. French-first, with rainfall, drought and heat-stress layers, shared by the Prime Minister's office, the meteorological agency and key ministries.",
     stack: MHEWS_STACK,
     languages: ['French', 'Arabic', 'Somali', 'English', 'Amharic'],
     shot: 'djibouti',
@@ -123,7 +123,7 @@ export const platforms: Platform[] = [
     url: 'https://uganda-mhiews-go-ug-413744588203.europe-west1.run.app/mapviewer',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'U-MHIEWS — the Uganda Multi-Hazard Integrated Early Warning System, built to address several hazards and their impacts in a changing climate. Coordinated from the Office of the Prime Minister, it brings 15 ministries and agencies onto shared rainfall, landslide-susceptibility and drought data.',
+      'U-MHIEWS, the Uganda Multi-Hazard Integrated Early Warning System, built to address several hazards and their impacts in a changing climate. Coordinated from the Office of the Prime Minister, it brings 15 ministries and agencies onto shared rainfall, landslide-susceptibility and drought data.',
     stack: MHEWS_STACK,
     languages: ['English', 'Luganda', 'Swahili'],
     shot: 'uganda',
@@ -160,14 +160,14 @@ export const path = [
   {
     step: '03',
     title: 'AI',
-    text: 'Machine learning on Earth-observation data — segmentation, classification and forecasting that sharpen early warnings.',
+    text: 'Machine learning on Earth-observation data: segmentation, classification and forecasting that sharpen early warnings.',
   },
 ];
 
 export const about = [
-  'I started as a software engineer and found my way to maps — to the moment a raster of rainfall anomalies becomes a decision someone makes in time.',
+  'I started as a software engineer and found my way to maps, and to the moment a raster of rainfall anomalies becomes a decision someone makes in time.',
   'Today I build early warning platforms for regional climate centres and national governments across East and Southern Africa: the data pipelines, the APIs, the map viewers and the infrastructure that keeps them running.',
-  'My background in systems analysis and cybersecurity shapes how I build — reliable, secure, and made to hold up in the field.',
+  'My background in systems analysis and cybersecurity shapes how I build: reliable, secure, and made to hold up in the field.',
 ];
 
 export const toolbox = [
@@ -204,9 +204,9 @@ export const toolbox = [
 // VERIFY: titles, organisations and dates are guesses.
 export const experience = [
   {
-    role: 'Software Developer — Developers Team',
+    role: 'Software Developer, Developers Team',
     org: 'ICPAC · IGAD Disaster Risk Management',
-    period: '2023 — Present', // VERIFY dates
+    period: '2023 - Present', // VERIFY dates
     current: true,
     points: [
       'Build and maintain multi-hazard early warning platforms for IGAD, SADC, Somalia, Djibouti and Uganda.',
@@ -219,7 +219,7 @@ export const experience = [
   {
     role: 'Software Engineer',
     org: 'Freelance & independent projects',
-    period: '2021 — 2023',
+    period: '2021 - 2023',
     current: false,
     points: [
       'Delivered full-stack web applications with React, Django and Node.',
@@ -232,7 +232,7 @@ export const work = [
   {
     title: 'East Africa Drought Watch',
     kind: 'Drought monitoring',
-    desc: 'Monitors drought across East Africa with a combined drought indicator — rainfall and soil-moisture deficits — and drought-stress levels per country.',
+    desc: 'Monitors drought across East Africa with a combined drought indicator (rainfall and soil-moisture deficits) and drought-stress levels per country.',
     tags: ['Python', 'FastAPI', 'GDAL', 'PostgreSQL'],
     href: 'https://droughtwatch.icpac.net/',
     img: 'drought-watch',
@@ -240,7 +240,7 @@ export const work = [
   {
     title: 'ICPAC.net',
     kind: 'Climate intelligence hub',
-    desc: 'The main platform of the IGAD Climate Prediction & Applications Centre — seasonal outlooks, data and publications.',
+    desc: 'The main platform of the IGAD Climate Prediction & Applications Centre, with seasonal outlooks, data and publications.',
     tags: ['Wagtail', 'Django', 'PostgreSQL', 'Docker'],
     href: 'https://www.icpac.net/',
     img: 'icpac',
