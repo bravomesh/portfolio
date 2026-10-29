@@ -1,0 +1,361 @@
+---
+import Icon from './Icon.astro';
+import { platforms, stats } from '../data/site';
+
+const pad = (n: number) => String(n).padStart(2, '0');
+const fmt = (lat: number, lon: number) =>
+  `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'}  ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
+const first = platforms[0];
+---
+
+<section class="section platforms" id="platforms">
+  <div class="container">
+    <header class="head">
+      <span class="eyebrow" data-reveal>02 — Platforms in the field</span>
+      <h2 class="h2" data-split>Early warning, <em>live</em> across two regions and three nations.</h2>
+      <p class="lead" data-reveal>
+        Five multi-hazard platforms that put satellite and climate data in front of the people who decide — from
+        regional climate centres to national disaster agencies. Scroll to fly between them.
+      </p>
+    </header>
+
+    <div class="story">
+      <div class="stage" aria-hidden="true">
+        <div class="frame">
+          <canvas id="platform-globe"></canvas>
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div class="hud top mono">
+            <span><span class="rec"></span>Tracking</span>
+            <span data-hud-index>01 / {pad(platforms.length)}</span>
+          </div>
+          <div class="hud bottom mono">
+            <span data-hud-region>{first.region}</span>
+            <span data-hud-coords>{fmt(first.view.lat, first.view.lon)}</span>
+          </div>
+          <div class="hud zoom mono">ZOOM ×<span data-hud-zoom>{first.view.scale.toFixed(1)}</span></div>
+        </div>
+      </div>
+
+      <ol class="cards">
+        {
+          platforms.map((p, i) => (
+            <li class="card" data-platform={i} id={`platform-${p.id}`}>
+              <div class="card-inner">
+                <div class="card-top mono">
+                  <span class="idx">{pad(i + 1)}</span>
+                  <span>{p.org}</span>
+                </div>
+                <h3 class="name">{p.name}</h3>
+                <p class="region mono">
+                  {p.region} · {p.countries.length} {p.countries.length === 1 ? 'country' : 'countries'}
+                </p>
+                <p class="summary">{p.summary}</p>
+                <dl class="facts">
+                  <div>
+                    <dt>Role</dt>
+                    <dd>{p.role}</dd>
+                  </div>
+                  <div>
+                    <dt>Languages</dt>
+                    <dd>{p.languages.join(' · ')}</dd>
+                  </div>
+                </dl>
+                <ul class="chips">
+                  {p.stack.map((s) => (
+                    <li>{s}</li>
+                  ))}
+                </ul>
+                <a class="btn btn--ghost open" href={p.url} target="_blank" rel="noopener noreferrer" data-magnetic>
+                  Open live map viewer <Icon name="arrow" />
+                </a>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <ul class="stats" data-stagger>
+      {
+        stats.map((s) => (
+          <li>
+            <span class="num">
+              <span data-count={s.value}>{s.value}</span>
+              {s.suffix}
+            </span>
+            <span class="label">{s.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  import { createGlobe, loadHiRes } from '../scripts/globe';
+  import { gsap, ScrollTrigger } from '../scripts/motion';
+  import { platforms } from '../data/site';
+  import { unionCountries } from '../scripts/globe-math';
+
+  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const cards = [...document.querySelectorAll<HTMLElement>('.platforms .card')];
+  const hud = {
+    index: $('[data-hud-index]'),
+    region: $('[data-hud-region]'),
+    coords: $('[data-hud-coords]'),
+    zoom: $('[data-hud-zoom]'),
+  };
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fmt = (lat: number, lon: number) =>
+    `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'}  ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
+
+  const globe = createGlobe($<HTMLCanvasElement>('#platform-globe'), {
+    view: platforms[0].view,
+    highlight: unionCountries(platforms),
+    beacons: platforms.map((p) => p.beacon),
+    detail: true,
+  });
+  ScrollTrigger.create({ trigger: '.platforms', start: 'top bottom+=600', once: true, onEnter: () => loadHiRes() });
+
+  const readout = { ...platforms[0].view };
+  let current = -1;
+
+  function activate(i: number) {
+    if (i === current) return;
+    current = i;
+    const p = platforms[i];
+    cards.forEach((c, j) => c.classList.toggle('active', j === i));
+    globe.setActive(new Set(p.countries));
+    globe.flyTo(p.view, 1700);
+    hud.index.textContent = `${pad(i + 1)} / ${pad(platforms.length)}`;
+    hud.region.textContent = p.region;
+    gsap.to(readout, {
+      ...p.view,
+      duration: 1.7,
+      ease: 'power3.inOut',
+      overwrite: true,
+      onUpdate: () => {
+        hud.coords.textContent = fmt(readout.lat, readout.lon);
+        hud.zoom.textContent = readout.scale.toFixed(1);
+      },
+    });
+  }
+
+  activate(0);
+  cards.forEach((card, i) =>
+    ScrollTrigger.create({
+      trigger: card,
+      start: 'top 60%',
+      end: 'bottom 60%',
+      onToggle: (self) => self.isActive && activate(i),
+    }),
+  );
+</script>
+
+<style>
+  .head {
+    max-width: 920px;
+  }
+
+  .story {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(32px, 5vw, 80px);
+    margin-top: clamp(56px, 8vw, 110px);
+  }
+
+  .stage {
+    position: sticky;
+    top: 10vh;
+    height: 80vh;
+  }
+  .frame {
+    position: relative;
+    height: 100%;
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 50% 50%, var(--accent-soft), transparent 60%),
+      var(--bg-2);
+    overflow: hidden;
+  }
+  #platform-globe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 0 solid var(--accent);
+  }
+  .corner.tl { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+  .corner.tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
+  .corner.bl { bottom: 16px; left: 16px; border-width: 0 0 1px 1px; }
+  .corner.br { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+
+  .hud {
+    position: absolute;
+    left: 44px;
+    right: 44px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: pre;
+    font-variant-numeric: tabular-nums;
+  }
+  .hud.top { top: 30px; }
+  .hud.bottom { bottom: 30px; }
+  .hud.zoom {
+    top: 50%;
+    left: auto;
+    right: 30px;
+    writing-mode: vertical-rl;
+    translate: 0 -50%;
+  }
+  .rec {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.4s steps(2, jump-none) infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0.2; }
+  }
+
+  .cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card {
+    min-height: 82vh;
+    display: flex;
+    align-items: center;
+    padding-block: 6vh;
+  }
+  .card-inner {
+    opacity: 0.28;
+    transform: translateX(16px);
+    transition: opacity 0.7s var(--ease-out), transform 0.9s var(--ease-out);
+  }
+  .card.active .card-inner {
+    opacity: 1;
+    transform: none;
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .idx {
+    color: var(--accent);
+  }
+  .name {
+    margin-top: 18px;
+    font: 400 clamp(2.2rem, 3.6vw, 3.4rem) / 1 var(--f-display);
+    letter-spacing: -0.015em;
+  }
+  .region {
+    margin-top: 14px;
+    color: var(--accent);
+  }
+  .summary {
+    margin-top: 20px;
+    color: var(--muted);
+    max-width: 48ch;
+  }
+  .facts {
+    display: grid;
+    gap: 14px;
+    margin: 28px 0 22px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+  .facts dt {
+    font: 500 0.68rem/1 var(--f-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .facts dd {
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+  }
+  .open {
+    margin-top: 28px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: clamp(64px, 10vw, 140px) 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .stats li {
+    display: grid;
+    gap: 10px;
+    padding: 36px 24px 0 0;
+  }
+  .stats li + li {
+    padding-left: 24px;
+    border-left: 1px solid var(--line);
+  }
+  .num {
+    font: 400 clamp(3rem, 6vw, 5.4rem) / 1 var(--f-display);
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+  }
+  .label {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 900px) {
+    .story {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .stage {
+      top: 60px;
+      z-index: 2;
+      height: 46vh;
+      margin-inline: calc(var(--gutter) * -0.5);
+    }
+    .frame {
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 50% 50%, var(--accent-soft), transparent 60%),
+        var(--bg-2);
+    }
+    .hud.zoom {
+      display: none;
+    }
+    .card {
+      min-height: 70vh;
+      align-items: flex-start;
+      padding-block: 32px 10vh;
+    }
+    .stats {
+      grid-template-columns: 1fr 1fr;
+    }
+    .stats li:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>
