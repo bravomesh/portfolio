@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Hosting: GitHub Pages via Actions; `site: 'https://bravomesh.github.io'`, `base: '/mPortfolio'`. All internal URLs must respect `import.meta.env.BASE_URL`.
+- Hosting: GitHub Pages via Actions; `site: 'https://bravomesh.github.io'`, `base: '/portfolio'`. All internal URLs must respect `import.meta.env.BASE_URL`.
 - Commits: straight to `master`, pushed after each task. Author `bravomesh <mshckkibet@gmail.com>`, SSH-signed (already configured repo-local). **No AI/Claude trailers.**
 - No CDN scripts or icon fonts; inline SVG icons only.
 - Accent `#ff8a3d`; dark default bg `#0b0f0e`; fonts Instrument Serif / Geist Variable / Geist Mono.
@@ -74,7 +74,7 @@ and `npm i -D @types/d3-geo @types/topojson-client`
 import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: 'https://bravomesh.github.io',
-  base: '/mPortfolio',
+  base: '/portfolio',
 });
 ```
 

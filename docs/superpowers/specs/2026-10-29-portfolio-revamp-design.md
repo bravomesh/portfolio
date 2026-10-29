@@ -14,7 +14,7 @@ Software engineer by training, now working at the intersection of GIS and AI.
 |---|---|
 | Direction | "Mission Control": cartographic dark UI, D3 globe hero + scroll-pinned globe story |
 | Stack | Astro 7 (static output) + Vite, npm deps (no CDN scripts) |
-| Hosting | GitHub Pages via GitHub Actions (`withastro/action`), `base: '/mPortfolio'` |
+| Hosting | GitHub Pages via GitHub Actions (`withastro/action`), `base: '/portfolio'` |
 | Git | Commit straight to `master`, push as we go. Author `bravomesh <mshckkibet@gmail.com>`, SSH-signed, no AI trailers |
 
 One-time manual step for the owner: repo **Settings → Pages → Source: GitHub Actions**.
