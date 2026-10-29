@@ -1,0 +1,250 @@
+---
+import Icon from './Icon.astro';
+import { profile } from '../data/site';
+---
+
+<section class="section contact" id="contact">
+  <div class="rings" aria-hidden="true"></div>
+  <div class="container">
+    <span class="eyebrow" data-reveal>06 — Contact</span>
+    <h2 class="big" data-split>Let's build systems that <em>warn early</em>.</h2>
+
+    <div class="grid">
+      <div class="left" data-reveal>
+        <p class="lead">
+          Working on climate, disaster risk, geospatial data or AI for public good? I'm open to collaborations,
+          consulting and full-time roles.
+        </p>
+
+        <button class="email" id="copy-email" data-email={profile.email} data-cursor>
+          <span class="addr">{profile.email}</span>
+          <span class="state mono">
+            <span class="idle"><Icon name="copy" size={16} /> Copy</span>
+            <span class="done"><Icon name="check" size={16} /> Copied</span>
+          </span>
+        </button>
+
+        <ul class="socials">
+          {
+            profile.socials.map((s) => (
+              <li>
+                <a href={s.href} target="_blank" rel="noopener noreferrer">
+                  <Icon name={s.icon} size={18} />
+                  <span>{s.label}</span>
+                  <Icon name="arrow" size={16} />
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={profile.cv} target="_blank" rel="noopener noreferrer">
+              <Icon name="download" size={18} />
+              <span>Curriculum vitae</span>
+              <Icon name="arrow" size={16} />
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <form class="form" id="contact-form" data-reveal data-delay="0.1">
+        <label>
+          <span class="mono">Name</span>
+          <input name="name" autocomplete="name" required />
+        </label>
+        <label>
+          <span class="mono">Email</span>
+          <input name="email" type="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span class="mono">Message</span>
+          <textarea name="message" rows="4" required></textarea>
+        </label>
+        <button class="btn" type="submit" data-magnetic>Send message <Icon name="arrow-right" /></button>
+        <p class="note mono">Opens your email app with the message ready to send.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  const btn = document.getElementById('copy-email')!;
+  const email = btn.dataset.email!;
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 2200);
+    } catch {
+      location.href = `mailto:${email}`;
+    }
+  });
+
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(form);
+    const subject = `Hello from ${d.get('name')}`;
+    const body = `${d.get('message')}\n\n— ${d.get('name')} (${d.get('email')})`;
+    location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+</script>
+
+<style>
+  .contact {
+    overflow: clip;
+  }
+  .rings {
+    position: absolute;
+    left: 50%;
+    bottom: -60vmin;
+    width: 140vmin;
+    aspect-ratio: 1;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, transparent 0 calc(7% - 1px), var(--line) calc(7% - 1px) 7%);
+    mask: radial-gradient(circle, #000 30%, transparent 70%);
+    pointer-events: none;
+  }
+  .big {
+    margin-top: 24px;
+    max-width: 14ch;
+    font: 400 clamp(3.2rem, 9vw, 8.6rem) / 0.92 var(--f-display);
+    letter-spacing: -0.03em;
+  }
+  .big em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 7vw, 120px);
+    margin-top: clamp(56px, 8vw, 110px);
+  }
+  .lead {
+    margin-top: 0;
+  }
+
+  .email {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    width: 100%;
+    margin-top: 40px;
+    padding: 26px 0;
+    border-block: 1px solid var(--line-2);
+    text-align: left;
+  }
+  .addr {
+    font: 400 clamp(1.6rem, 3vw, 2.6rem) / 1 var(--f-display);
+    overflow-wrap: anywhere;
+    transition: color 0.4s;
+  }
+  .email:hover .addr {
+    color: var(--accent);
+  }
+  .state {
+    display: grid;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .state > span {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.3s, translate 0.4s var(--ease-out);
+  }
+  .done {
+    opacity: 0;
+    translate: 0 8px;
+    color: var(--accent);
+  }
+  .copied .idle {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+  .copied .done {
+    opacity: 1;
+    translate: 0;
+  }
+
+  .socials {
+    display: grid;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .socials a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    transition: color 0.3s, padding 0.5s var(--ease-out);
+  }
+  .socials a span {
+    flex: 1;
+  }
+  .socials a:hover {
+    color: var(--fg);
+    padding-left: 10px;
+  }
+
+  .form {
+    display: grid;
+    gap: 26px;
+    align-content: start;
+    padding: clamp(24px, 3vw, 40px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--bg-2) 80%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  label {
+    display: grid;
+    gap: 8px;
+  }
+  label .mono {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-size: 0.68rem;
+  }
+  input,
+  textarea {
+    width: 100%;
+    padding: 10px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line-2);
+    background: transparent;
+    color: var(--fg);
+    font: inherit;
+    font-size: 1.05rem;
+    resize: vertical;
+    transition: border-color 0.3s;
+  }
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .form .btn {
+    justify-self: start;
+  }
+  .note {
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
