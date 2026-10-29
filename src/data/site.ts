@@ -107,9 +107,10 @@ export const platforms: Platform[] = [
     url: 'https://djibouti-mhews-413744588203.europe-west1.run.app/mapviewer',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      "Djibouti's national multi-hazard platform, shared by the Prime Minister's office, the national meteorological agency and key ministries — French-first, multilingual by design.",
+      "Djibouti's national multi-hazard early warning system — an integrated platform for monitoring climate and environmental risks, enabling rapid awareness and early action nationwide. French-first, with rainfall, drought and heat-stress layers, shared by the Prime Minister's office, the meteorological agency and key ministries.",
     stack: MHEWS_STACK,
     languages: ['French', 'Arabic', 'Somali', 'English', 'Amharic'],
+    shot: 'djibouti',
   },
   {
     id: 'uganda',
@@ -172,24 +173,28 @@ export const about = [
 export const toolbox = [
   {
     title: 'GIS & Earth Observation',
+    short: 'Earth observation',
     icon: 'globe',
     blurb: 'From raw satellite scenes to analysis-ready layers.',
     items: ['Google Earth Engine', 'QGIS', 'ArcGIS', 'GDAL', 'PostGIS', 'GeoPandas', 'Leaflet', 'MapLibre'],
   },
   {
     title: 'AI & Machine Learning',
+    short: 'Intelligence',
     icon: 'spark',
     blurb: 'Models that read the planet.',
     items: ['LLMs', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'UNet', 'Random Forest', 'MaxEnt'],
   },
   {
     title: 'Platform Engineering',
+    short: 'Platforms',
     icon: 'layers',
     blurb: 'Architecture, databases, APIs and interfaces people actually use.',
     items: ['System design', 'Python', 'Django', 'Wagtail', 'FastAPI', 'Flask', 'React', 'Svelte', 'Next.js', 'PostgreSQL', 'Redis', 'MongoDB'],
   },
   {
     title: 'Cloud & Data Ops',
+    short: 'Infrastructure',
     icon: 'cloud',
     blurb: 'Pipelines and infrastructure that stay up.',
     items: ['GCP', 'AWS', 'Kubernetes', 'Docker', 'Prefect', 'Dask', 'Coiled', 'CI/CD', 'Linux'],

@@ -1,6 +1,15 @@
 ---
-import Icon from './Icon.astro';
+import ToolIcon from './ToolIcon.astro';
 import { toolbox } from '../data/site';
+import { icons } from '../data/icons';
+
+const pad = (n: number) => String(n).padStart(2, '0');
+const n = toolbox.length;
+// Six pin slots per layer, nudged per layer so the stack doesn't look gridded.
+const slots = [
+  [24, 30], [52, 22], [78, 34],
+  [30, 70], [58, 62], [80, 76],
+];
 ---
 
 <section class="section toolbox" id="toolbox">
@@ -9,140 +18,447 @@ import { toolbox } from '../data/site';
       <span class="eyebrow" data-reveal>03 — Toolbox</span>
       <h2 class="h2" data-split>Satellites in, <em>decisions</em> out.</h2>
       <p class="lead" data-reveal>
-        The stack behind the platforms — from Earth-observation pipelines and models to the APIs, interfaces and
-        infrastructure that serve them.
+        Four layers of the stack behind the platforms — from Earth-observation pipelines and models to the APIs,
+        interfaces and infrastructure that serve them.
       </p>
     </header>
+  </div>
 
-    <div class="bento" data-stagger>
-      {
-        toolbox.map((t, i) => (
-          <article class="tile" data-tile>
-            <div class="tile-top">
-              <span class="icon">
-                <Icon name={t.icon} size={22} />
-              </span>
-              <span class="mono n">0{i + 1}</span>
-            </div>
-            <h3>{t.title}</h3>
-            <p>{t.blurb}</p>
-            <ul class="chips">
-              {t.items.map((s) => (
-                <li>{s}</li>
-              ))}
-            </ul>
-          </article>
-        ))
-      }
+  <div class="tb" data-tb>
+    <div class="container stage">
+      <div class="scene" aria-hidden="true">
+        <span class="io in mono">▼ Satellite &amp; climate data in</span>
+        <div class="stack" data-stack>
+          {
+            toolbox.map((t, i) => (
+              <div class="plane" style={`--i:${i}`} data-plane>
+                <span class="plane-label mono">
+                  L{i + 1} · {t.short}
+                </span>
+                {t.items.slice(0, 6).map((name, j) => (
+                  <span class="pin" style={`--x:${slots[j][0] + ((i * 7) % 9) - 4}%;--y:${slots[j][1] + ((i * 5) % 7) - 3}%`}>
+                    <span class="shadow" />
+                    <span class="bulb">
+                      <ToolIcon name={name} size={20} />
+                    </span>
+                  </span>
+                ))}
+              </div>
+            ))
+          }
+          {[0, 1, 2].map((k) => <span class="packet" style={`--k:${k}`} />)}
+        </div>
+        <span class="io out mono">Decisions out ▼</span>
+      </div>
+
+      <div class="side">
+        <div class="meter mono" aria-hidden="true">
+          <span>Layer <b data-tb-index>01</b> / {pad(n)}</span>
+          <span class="segs">{toolbox.map(() => <i />)}</span>
+        </div>
+        <div class="panels">
+          {
+            toolbox.map((t, i) => (
+              <article class="panel" data-panel>
+                <p class="kicker mono">
+                  L{i + 1} · {t.short}
+                </p>
+                <h3>{t.title}</h3>
+                <p class="blurb">{t.blurb}</p>
+                <ul class="tools">
+                  {t.items.map((name, j) => (
+                    <li style={`--j:${j};--tile:${icons[name]?.hex ?? 'var(--accent)'}`}>
+                      <ToolIcon name={name} size={26} />
+                      <span>{name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))
+          }
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  document.querySelectorAll<HTMLElement>('[data-tile]').forEach((tile) =>
-    tile.addEventListener('pointermove', (e) => {
-      const r = tile.getBoundingClientRect();
-      tile.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      tile.style.setProperty('--my', `${e.clientY - r.top}px`);
-    }),
-  );
+  import { gsap, ScrollTrigger } from '../scripts/motion';
+
+  const root = document.querySelector<HTMLElement>('[data-tb]')!;
+  const stack = root.querySelector<HTMLElement>('[data-stack]')!;
+  const planes = [...root.querySelectorAll<HTMLElement>('[data-plane]')];
+  const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+  const segs = [...root.querySelectorAll<HTMLElement>('.segs i')];
+  const index = root.querySelector<HTMLElement>('[data-tb-index]')!;
+
+  let active = -1;
+  const setActive = (i: number) => {
+    if (i === active) return;
+    active = i;
+    planes.forEach((p, j) => {
+      p.classList.toggle('active', j === i);
+      p.classList.toggle('above', j < i); // layers above the active one peel away
+    });
+    panels.forEach((p, j) => p.classList.toggle('active', j === i));
+    segs.forEach((s, j) => s.classList.toggle('on', j <= i));
+    index.textContent = String(i + 1).padStart(2, '0');
+  };
+  setActive(0);
+
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
+    root.classList.add('is-pinned');
+    const s = { gap: 14, rx: 64, rz: -48 };
+    const apply = () => {
+      stack.style.setProperty('--gap', String(s.gap));
+      stack.style.setProperty('--rx', `${s.rx}deg`);
+      stack.style.setProperty('--rz', `${s.rz}deg`);
+    };
+    apply();
+    gsap
+      .timeline({
+        defaults: { onUpdate: apply },
+        scrollTrigger: {
+          trigger: root,
+          start: 'top top',
+          end: `+=${planes.length * 85}%`,
+          pin: true,
+          scrub: 1,
+          refreshPriority: 1,
+          onUpdate: (self) => setActive(Math.min(planes.length - 1, Math.floor(self.progress * planes.length))),
+        },
+      })
+      .to(s, { gap: 88, rx: 56, rz: -38, duration: 0.3, ease: 'power2.out' })
+      .to(s, { rz: -28, duration: 0.7, ease: 'none' });
+    ScrollTrigger.sort();
+
+    return () => {
+      root.classList.remove('is-pinned');
+      stack.style.removeProperty('--gap');
+      stack.style.removeProperty('--rx');
+      stack.style.removeProperty('--rz');
+    };
+  });
 </script>
 
 <style>
+  @property --lift {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
   .head {
     max-width: 860px;
   }
-  .bento {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 16px;
-    margin-top: clamp(48px, 7vw, 96px);
+
+  .tb {
+    margin-top: clamp(32px, 5vw, 64px);
   }
-  .tile {
-    --mx: 50%;
-    --my: 0%;
+  .stage {
+    display: grid;
+    gap: 40px;
+  }
+
+  /* ---------- 3D layer stack ---------- */
+  .scene {
     position: relative;
-    grid-column: span 6;
+    display: grid;
+    place-items: center;
+    height: 440px;
+    perspective: 2000px;
+    overflow-x: clip;
+  }
+  .io {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .io.in {
+    top: 0;
+    color: var(--accent);
+  }
+  .io.out {
+    bottom: 0;
+  }
+  .stack {
+    --gap: 70;
+    --rx: 56deg;
+    --rz: -36deg;
+    position: relative;
+    width: min(54vw, 270px);
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateZ(var(--rz));
+  }
+  .plane {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(calc((1.5 - var(--i)) * var(--gap) * 1px + var(--lift)));
+    border: 1px solid var(--line-2);
+    border-radius: 18px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 calc(16.66% - 1px), var(--line) calc(16.66% - 1px) 16.66%),
+      repeating-linear-gradient(90deg, transparent 0 calc(16.66% - 1px), var(--line) calc(16.66% - 1px) 16.66%),
+      color-mix(in srgb, var(--bg-2) 88%, transparent);
+    transition:
+      --lift 0.8s var(--ease-out),
+      border-color 0.5s,
+      box-shadow 0.6s,
+      opacity 0.5s;
+  }
+  .is-pinned .plane:not(.active) {
+    opacity: 0.5;
+  }
+  .is-pinned .plane.above {
+    --lift: 70px;
+    opacity: 0.14;
+  }
+  .plane.active {
+    --lift: 34px;
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 1px var(--accent),
+      0 0 80px -10px var(--accent-soft),
+      inset 0 0 60px -20px var(--accent-soft);
+  }
+  .plane-label {
+    position: absolute;
+    left: 14px;
+    bottom: 10px;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .plane.active .plane-label {
+    color: var(--accent);
+  }
+
+  /* Logo pins stand up from the plane, always facing the viewer */
+  .pin {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform-style: preserve-3d;
+  }
+  .shadow {
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--fg) 30%, transparent), transparent 70%);
+  }
+  .bulb {
+    position: absolute;
+    left: -18px;
+    top: -36px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--line-2);
+    transform-origin: 50% 100%;
+    transform: translateZ(14px) rotateZ(calc(-1 * var(--rz))) rotateX(calc(-1 * var(--rx)));
+    transition: border-color 0.5s, scale 0.6s var(--ease-out);
+  }
+  .plane.active .bulb {
+    border-color: var(--accent);
+    scale: 1.12;
+  }
+
+  /* Data packets falling through the stack */
+  .packet {
+    position: absolute;
+    left: calc(30% + var(--k) * 22%);
+    top: calc(40% + var(--k) * 12%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px 2px var(--accent);
+    animation: fall 3.2s cubic-bezier(0.5, 0, 0.6, 1) infinite;
+    animation-delay: calc(var(--k) * -1.1s);
+  }
+  @keyframes fall {
+    0% {
+      transform: translateZ(calc(1.5 * var(--gap) * 1px + 90px));
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateZ(calc(-1.5 * var(--gap) * 1px));
+      opacity: 0;
+    }
+  }
+
+  /* ---------- side panel ---------- */
+  .meter {
+    display: none;
+  }
+  .panels {
+    display: grid;
+    gap: 56px;
+  }
+  .kicker {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+  .panel h3 {
+    margin-top: 12px;
+    font: 400 clamp(2rem, 3.4vw, 3.1rem) / 1 var(--f-display);
+    letter-spacing: -0.015em;
+  }
+  .blurb {
+    margin-top: 12px;
+    color: var(--muted);
+  }
+  .tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 10px;
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tools li {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    min-height: 320px;
-    padding: clamp(24px, 3vw, 40px);
-    border-radius: var(--radius);
+    gap: 12px;
+    padding: 16px 14px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
     background: var(--bg-2);
+    font: 500 0.74rem/1.25 var(--f-mono);
+    color: var(--muted);
     overflow: hidden;
-    isolation: isolate;
+    transition:
+      border-color 0.4s,
+      color 0.4s,
+      translate 0.5s var(--ease-out),
+      box-shadow 0.5s;
   }
-  .tile:nth-child(1),
-  .tile:nth-child(4) {
-    grid-column: span 7;
-  }
-  .tile:nth-child(2),
-  .tile:nth-child(3) {
-    grid-column: span 5;
-  }
-  /* Border + spotlight that follow the cursor */
-  .tile::before,
-  .tile::after {
+  .tools li::before {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    transition: opacity 0.5s;
-  }
-  .tile::before {
-    z-index: -1;
-    background: radial-gradient(420px circle at var(--mx) var(--my), var(--accent-soft), transparent 60%);
+    background: radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--tile, var(--accent)) 22%, transparent), transparent 70%);
     opacity: 0;
+    transition: opacity 0.4s;
   }
-  .tile::after {
-    padding: 1px;
-    background:
-      radial-gradient(300px circle at var(--mx) var(--my), var(--accent), transparent 70%),
-      var(--line);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
+  .tools li:hover {
+    translate: 0 -4px;
+    color: var(--fg);
+    border-color: var(--line-2);
+    box-shadow: 0 18px 30px -22px rgba(0, 0, 0, 0.6);
   }
-  .tile:hover::before {
+  .tools li:hover::before {
     opacity: 1;
   }
-  .tile-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: auto;
-    padding-bottom: 28px;
+  .tools li:hover :global(.ti) {
+    scale: 1.12;
   }
-  .icon {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 1px solid var(--line-2);
-    color: var(--accent);
-  }
-  .n {
-    color: var(--muted);
-  }
-  h3 {
-    font: 400 clamp(1.8rem, 2.6vw, 2.4rem) / 1.05 var(--f-display);
-  }
-  .tile > p {
-    color: var(--muted);
-  }
-  .chips {
-    margin-top: 8px;
+  .tools li :global(.ti) {
+    transition: scale 0.5s var(--ease-out);
   }
 
-  @media (max-width: 900px) {
-    .tile,
-    .tile:nth-child(n) {
-      grid-column: 1 / -1;
-      min-height: 0;
-    }
+  /* ---------- pinned (desktop, motion OK) ---------- */
+  .is-pinned {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    margin-top: 0;
+  }
+  .is-pinned .stage {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 80px);
+  }
+  .is-pinned .scene {
+    height: min(78vh, 680px);
+  }
+  .is-pinned .stack {
+    width: min(30vw, 380px);
+  }
+  .is-pinned .meter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .is-pinned .meter b {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .segs {
+    display: flex;
+    gap: 6px;
+  }
+  .segs i {
+    width: 34px;
+    height: 2px;
+    background: var(--line-2);
+    transition: background-color 0.4s;
+  }
+  .segs i.on {
+    background: var(--accent);
+  }
+  .is-pinned .panels {
+    display: grid;
+    gap: 0;
+  }
+  .is-pinned .panel {
+    grid-area: 1 / 1;
+    pointer-events: none;
+  }
+  .is-pinned .panel.active {
+    pointer-events: auto;
+  }
+  .is-pinned .panel > :not(.tools),
+  .is-pinned .tools li {
+    opacity: 0;
+    translate: 0 18px;
+    transition:
+      opacity 0.35s,
+      translate 0.6s var(--ease-out),
+      border-color 0.4s,
+      color 0.4s,
+      box-shadow 0.5s;
+  }
+  .is-pinned .panel.active > :not(.tools),
+  .is-pinned .panel.active .tools li {
+    opacity: 1;
+    translate: 0;
+    transition-delay: 0.08s;
+  }
+  .is-pinned .panel.active .tools li {
+    transition-delay: calc(0.15s + var(--j) * 0.035s);
+  }
+  .is-pinned .panel.active .tools li:hover {
+    translate: 0 -4px;
+    transition-delay: 0s;
   }
 </style>

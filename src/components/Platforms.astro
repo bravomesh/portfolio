@@ -265,6 +265,8 @@ const first = platforms[0];
     padding-block: 6vh;
   }
   .card-inner {
+    flex: 1;
+    min-width: 0;
     opacity: 0.28;
     transform: translateX(16px);
     transition: opacity 0.7s var(--ease-out), transform 0.9s var(--ease-out);
@@ -316,6 +318,7 @@ const first = platforms[0];
     background: var(--line-2);
   }
   .bar span {
+    min-width: 0;
     margin-left: 8px;
     font-size: 0.66rem;
     color: var(--muted);
@@ -385,7 +388,7 @@ const first = platforms[0];
 
   @media (max-width: 900px) {
     .story {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 0;
     }
     .stage {
