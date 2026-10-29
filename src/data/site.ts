@@ -86,9 +86,9 @@ export const platforms: Platform[] = [
     view: { lon: 46.5, lat: 6, scale: 4.2 },
     beacon: [45.32, 2.05],
     url: 'https://somhews-gov-so-cms-web-413744588203.europe-west1.run.app/mapviewer/',
-    role: 'Full-stack & geospatial developer', // VERIFY
+    role: 'ICPAC developers team — on-site at inception in Mogadishu',
     summary:
-      'A national early warning system connecting SoDMA and five line ministries — health, environment, agriculture and water — to one live picture of risk, with situation reports built in.',
+      "S-MHEWS — Somalia's national multi-hazard early warning system, built on-site in Mogadishu with SoDMA. One real-time platform for monitoring, analysing and sharing warnings across five line ministries, in support of the Sendai Framework.",
     stack: MHEWS_STACK,
     languages: ['Somali', 'Arabic', 'English', 'Oromo', 'Swahili'],
   },
@@ -175,13 +175,13 @@ export const toolbox = [
     title: 'AI & Machine Learning',
     icon: 'spark',
     blurb: 'Models that read the planet.',
-    items: ['TensorFlow', 'PyTorch', 'Scikit-learn', 'UNet', 'Random Forest', 'MaxEnt'],
+    items: ['LLMs', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'UNet', 'Random Forest', 'MaxEnt'],
   },
   {
     title: 'Platform Engineering',
     icon: 'layers',
-    blurb: 'APIs, CMSs and interfaces people actually use.',
-    items: ['Python', 'Django', 'Wagtail', 'FastAPI', 'Flask', 'React', 'Svelte', 'Next.js', 'PostgreSQL', 'Redis', 'MongoDB'],
+    blurb: 'Architecture, databases, APIs and interfaces people actually use.',
+    items: ['System design', 'Python', 'Django', 'Wagtail', 'FastAPI', 'Flask', 'React', 'Svelte', 'Next.js', 'PostgreSQL', 'Redis', 'MongoDB'],
   },
   {
     title: 'Cloud & Data Ops',
@@ -194,12 +194,13 @@ export const toolbox = [
 // VERIFY: titles, organisations and dates are guesses.
 export const experience = [
   {
-    role: 'Software & Geospatial Developer',
-    org: 'ICPAC — IGAD Climate Prediction & Applications Centre',
-    period: '2023 — Present',
+    role: 'Software Developer — Developers Team',
+    org: 'ICPAC · IGAD Disaster Risk Management',
+    period: '2023 — Present', // VERIFY dates
     current: true,
     points: [
       'Build and maintain multi-hazard early warning platforms for IGAD, SADC, Somalia, Djibouti and Uganda.',
+      "Travelled to Mogadishu for the inception of Somalia's national Multi-Hazard Early Warning System (S-MHEWS) with SoDMA.",
       'Engineer satellite and climate data pipelines (Earth Engine, GDAL, Prefect, Dask) that feed live map viewers.',
       'Ship and operate services on GCP Cloud Run, Docker and Kubernetes.',
       'Apply machine learning to hazard and land-cover mapping.',
