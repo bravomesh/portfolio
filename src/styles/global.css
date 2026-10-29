@@ -285,6 +285,25 @@ html.lenis body {
   overflow: clip;
 }
 
+/* ---------- tilt glare ---------- */
+[data-tilt] {
+  position: relative;
+}
+.glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.28), transparent 55%);
+  mix-blend-mode: overlay;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+[data-tilt]:hover .glare {
+  opacity: 1;
+}
+
 /* ---------- interactive globes ---------- */
 .globe-interactive {
   cursor: grab;

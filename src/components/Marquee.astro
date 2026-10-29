@@ -4,6 +4,7 @@ import { partners } from '../data/site';
 
 <section class="marquee" aria-label="Organisations I've built platforms for">
   <p class="label mono">Platforms built for</p>
+  <div class="viewport">
   <div class="track">
     {
       [0, 1].map((copy) => (
@@ -18,7 +19,40 @@ import { partners } from '../data/site';
       ))
     }
   </div>
+  </div>
 </section>
+
+<script>
+  import { gsap, lenis, reduced } from '../scripts/motion';
+
+  // Drift left; scrolling speeds it up, flips its direction and leans the type.
+  const root = document.querySelector<HTMLElement>('.marquee')!;
+  const track = root.querySelector<HTMLElement>('.track')!;
+  if (!reduced) {
+    root.classList.add('js');
+    const setX = gsap.quickSetter(track, 'x', 'px');
+    const setSkew = gsap.quickSetter(track, 'skewX', 'deg');
+    let half = track.scrollWidth / 2;
+    let x = 0, dir = 1, speed = 1, skew = 0, visible = false, hover = false;
+    new ResizeObserver(() => (half = track.scrollWidth / 2)).observe(track);
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(root);
+    root.addEventListener('pointerenter', () => (hover = true));
+    root.addEventListener('pointerleave', () => (hover = false));
+    gsap.ticker.add((_t, dt) => {
+      if (!visible || !half) return;
+      const v = lenis?.velocity ?? 0;
+      if (v > 0.5) dir = 1;
+      else if (v < -0.5) dir = -1;
+      const target = (hover ? 0.2 : 1) + Math.min(Math.abs(v) * 0.4, 16);
+      speed += (target - speed) * 0.08;
+      x = (x - speed * dir * dt * 0.05) % half;
+      if (x > 0) x -= half;
+      skew += (Math.max(-12, Math.min(12, -v * 0.5)) - skew) * 0.12;
+      setX(x);
+      setSkew(skew);
+    });
+  }
+</script>
 
 <style>
   .marquee {
@@ -42,14 +76,19 @@ import { partners } from '../data/site';
     font-size: 0.66rem;
     color: var(--muted);
   }
+  .viewport {
+    mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
   .track {
     display: flex;
     width: max-content;
     animation: scroll 46s linear infinite;
-    mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   }
   .marquee:hover .track {
     animation-play-state: paused;
+  }
+  .marquee.js .track {
+    animation: none;
   }
   ul {
     display: flex;

@@ -35,7 +35,7 @@ import { experience } from '../data/site';
 </section>
 
 <script>
-  import { gsap, reduced } from '../scripts/motion';
+  import { gsap, ScrollTrigger, reduced } from '../scripts/motion';
 
   if (!reduced) {
     const tl = document.querySelector('[data-timeline]')!;
@@ -45,6 +45,10 @@ import { experience } from '../data/site';
       { scaleY: 1, ease: 'none', scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: true } },
     );
   }
+  // Each dot lights up as the drawn line reaches it.
+  document.querySelectorAll('[data-timeline] > li').forEach((li) =>
+    ScrollTrigger.create({ trigger: li, start: 'top 62%', toggleClass: 'reached' }),
+  );
 </script>
 
 <style>
@@ -85,6 +89,20 @@ import { experience } from '../data/site';
     border-radius: 50%;
     background: var(--bg);
     border: 1px solid var(--accent);
+    transition: background-color 0.4s, box-shadow 0.6s;
+  }
+  .timeline > li.reached::before {
+    background: var(--accent);
+    box-shadow: 0 0 0 5px var(--accent-soft);
+    animation: dot-ping 1.1s var(--ease-out);
+  }
+  @keyframes dot-ping {
+    from {
+      box-shadow: 0 0 0 0 var(--accent);
+    }
+    to {
+      box-shadow: 0 0 0 18px transparent;
+    }
   }
   .when {
     display: flex;

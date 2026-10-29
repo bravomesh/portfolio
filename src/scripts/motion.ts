@@ -48,6 +48,7 @@ export function initMotion() {
   });
   addEventListener('hashchange', jumpToHash);
   magnetic();
+  tilt();
   cursor();
 }
 
@@ -189,6 +190,31 @@ function magnetic() {
     });
     el.addEventListener('pointerleave', () => {
       gsap.to([el, inner], { x: 0, y: 0, duration: 1.1, ease: 'elastic.out(1, 0.35)' });
+    });
+  });
+}
+
+function tilt() {
+  if (reduced || !fine) return;
+  $$('[data-tilt]').forEach((el) => {
+    const glare = document.createElement('span');
+    glare.className = 'glare';
+    el.append(glare);
+    gsap.set(el, { transformPerspective: 900 });
+    const rx = gsap.quickTo(el, 'rotationX', { duration: 0.9, ease: 'power3.out' });
+    const ry = gsap.quickTo(el, 'rotationY', { duration: 0.9, ease: 'power3.out' });
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      ry((px - 0.5) * 10);
+      rx((0.5 - py) * 10);
+      el.style.setProperty('--gx', `${px * 100}%`);
+      el.style.setProperty('--gy', `${py * 100}%`);
+    });
+    el.addEventListener('pointerleave', () => {
+      rx(0);
+      ry(0);
     });
   });
 }
