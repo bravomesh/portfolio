@@ -18,6 +18,7 @@ const links = [
     </a>
 
     <nav class="links" aria-label="Primary">
+      <span class="pill" aria-hidden="true"></span>
       {links.map((l) => <a href={l.href} data-nav={l.href.slice(1)}>{l.label}</a>)}
     </nav>
 
@@ -93,6 +94,7 @@ const links = [
     color: var(--accent);
   }
   .links {
+    position: relative;
     display: flex;
     gap: 4px;
     padding: 5px;
@@ -102,16 +104,36 @@ const links = [
     backdrop-filter: blur(10px);
   }
   .links a {
+    position: relative;
     padding: 8px 16px;
     border-radius: 999px;
     font-size: 0.88rem;
     color: var(--muted);
-    transition: color 0.3s, background-color 0.3s;
+    transition: color 0.3s;
   }
   .links a:hover,
   .links a.active {
     color: var(--fg);
+  }
+  /* One highlight that glides between links */
+  .pill {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 0;
+    width: var(--w, 0px);
+    translate: var(--x, 0px) 0;
+    border-radius: 999px;
     background: var(--bg-3);
+    box-shadow: inset 0 0 0 1px var(--line);
+    opacity: 0;
+    transition:
+      translate 0.55s var(--ease-out),
+      width 0.55s var(--ease-out),
+      opacity 0.3s;
+  }
+  .pill.on {
+    opacity: 1;
   }
   .right {
     display: flex;
@@ -248,13 +270,30 @@ const links = [
   menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
   addEventListener('keydown', (e) => e.key === 'Escape' && menu.classList.contains('open') && setMenu(false));
 
-  // Active section highlight
+  // Active section highlight + gliding pill
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav]');
+  const pill = nav.querySelector<HTMLElement>('.pill')!;
+  const linksEl = nav.querySelector<HTMLElement>('.links')!;
+  let current: HTMLAnchorElement | null = null;
+  const pillTo = (a: HTMLAnchorElement | null) => {
+    pill.classList.toggle('on', !!a);
+    if (!a) return;
+    pill.style.setProperty('--x', `${a.offsetLeft}px`);
+    pill.style.setProperty('--w', `${a.offsetWidth}px`);
+  };
+  navLinks.forEach((a) => a.addEventListener('pointerenter', () => pillTo(a)));
+  linksEl.addEventListener('pointerleave', () => pillTo(current));
   const io = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
-        navLinks.forEach((l) => l.classList.toggle('active', l.dataset.nav === e.target.id));
+        current = null;
+        navLinks.forEach((l) => {
+          const on = l.dataset.nav === e.target.id;
+          l.classList.toggle('active', on);
+          if (on) current = l;
+        });
+        if (!linksEl.matches(':hover')) pillTo(current);
       }),
     { rootMargin: '-45% 0px -50% 0px' },
   );

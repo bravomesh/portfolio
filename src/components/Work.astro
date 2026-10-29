@@ -21,7 +21,7 @@ const img = (name: string | null) => (name ? imgs[`../assets/work/${name}.png`]?
           const src = img(w.img);
           return (
             <li data-reveal>
-              <a href={w.href} target="_blank" rel="noopener noreferrer" data-preview={src ? i : undefined}>
+              <a href={w.href} target="_blank" rel="noopener noreferrer" data-preview={src ? i : undefined} data-cursor="View">
                 <span class="mono n">{String(i + 1).padStart(2, '0')}</span>
                 <span class="title">
                   <span class="t">{w.title}</span>

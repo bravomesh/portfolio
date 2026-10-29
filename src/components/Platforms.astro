@@ -56,7 +56,8 @@ const first = platforms[0];
                   {p.region} · {p.countries.length} {p.countries.length === 1 ? 'country' : 'countries'}
                 </p>
                 {shot(p.shot) && (
-                  <figure class="shot">
+                  <a class="shot-link" href={p.url} target="_blank" rel="noopener noreferrer" data-cursor="Visit" aria-label={`Open ${p.name}`}>
+                  <figure class="shot" data-tilt>
                     <div class="bar">
                       <i /><i /><i />
                       <span class="mono">{host(p.url)}</span>
@@ -69,6 +70,7 @@ const first = platforms[0];
                       loading="lazy"
                     />
                   </figure>
+                  </a>
                 )}
                 <p class="summary">{p.summary}</p>
                 <dl class="facts">
@@ -300,7 +302,12 @@ const first = platforms[0];
     margin-top: 14px;
     color: var(--accent);
   }
+  .shot-link {
+    display: block;
+    max-width: 520px;
+  }
   .shot {
+    position: relative;
     margin: 22px 0 0;
     max-width: 520px;
     border: 1px solid var(--line-2);

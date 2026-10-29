@@ -294,7 +294,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
     }
     const flip = x > w * 0.55; // keep the tooltip on the globe's open side
     tip.classList.toggle('flip', flip);
-    tip.style.transform = `translate(${flip ? x - tip.offsetWidth - 32 : x}px, ${y}px)`;
+    tip.style.transform = `translate(${flip ? x - tip.offsetWidth - 96 : x}px, ${y}px)`;
     tip.classList.add('on');
   }
 

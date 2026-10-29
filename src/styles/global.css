@@ -299,7 +299,7 @@ html.lenis body {
   z-index: 5;
   display: grid;
   gap: 3px;
-  margin: 16px 0 0 16px;
+  margin: 26px 0 0 48px; /* clear of the cursor label */
   padding: 9px 13px;
   border: 1px solid var(--line-2);
   border-radius: 12px;

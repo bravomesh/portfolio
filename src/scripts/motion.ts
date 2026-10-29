@@ -171,15 +171,24 @@ function counters() {
 function magnetic() {
   if (reduced || !fine) return;
   $$('[data-magnetic]').forEach((el) => {
-    const x = gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out' });
-    const y = gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out' });
+    // Wrap the label + icon so they can drift further than the button (parallax).
+    const inner = document.createElement('span');
+    inner.className = 'mag';
+    inner.append(...el.childNodes);
+    el.append(inner);
+    const q = (t: Element, p: string) => gsap.quickTo(t, p, { duration: 0.6, ease: 'power3.out' });
+    const [bx, by, ix, iy] = [q(el, 'x'), q(el, 'y'), q(inner, 'x'), q(inner, 'y')];
     el.addEventListener('pointermove', (e) => {
       const r = el.getBoundingClientRect();
-      x((e.clientX - r.left - r.width / 2) * 0.35);
-      y((e.clientY - r.top - r.height / 2) * 0.35);
+      const dx = e.clientX - r.left - r.width / 2;
+      const dy = e.clientY - r.top - r.height / 2;
+      bx(dx * 0.3);
+      by(dy * 0.3);
+      ix(dx * 0.18);
+      iy(dy * 0.18);
     });
     el.addEventListener('pointerleave', () => {
-      gsap.to(el, { x: 0, y: 0, duration: 1, ease: 'elastic.out(1, 0.4)' });
+      gsap.to([el, inner], { x: 0, y: 0, duration: 1.1, ease: 'elastic.out(1, 0.35)' });
     });
   });
 }
@@ -192,18 +201,30 @@ function cursor() {
   gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
   const dx = gsap.quickTo(dot, 'x', { duration: 0.1 });
   const dy = gsap.quickTo(dot, 'y', { duration: 0.1 });
-  const rx = gsap.quickTo(ring, 'x', { duration: 0.5, ease: 'power3.out' });
-  const ry = gsap.quickTo(ring, 'y', { duration: 0.5, ease: 'power3.out' });
+  const rx = gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
+  const ry = gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
+  const label = ring.querySelector('span')!;
+  let mode = '';
+  // Re-evaluated on every move so labels that change in place (e.g. the globe's Drag → Open) update.
   addEventListener('pointermove', (e) => {
     dx(e.clientX);
     dy(e.clientY);
     rx(e.clientX);
     ry(e.clientY);
+    const t = (e.target as Element).closest?.('[data-cursor], a, button, input, textarea, select');
+    const text = (t as HTMLElement | null)?.dataset.cursor;
+    const next = text ? `label:${text}` : t?.matches('input, textarea, select') ? 'text' : t ? 'hot' : '';
+    if (next === mode) return;
+    mode = next;
+    ring.classList.toggle('hot', next === 'hot');
+    ring.classList.toggle('label', !!text);
+    dot.classList.toggle('hide', !!text || next === 'text');
+    ring.classList.toggle('hide', next === 'text');
+    if (text) label.textContent = text;
   });
-  document.addEventListener('pointerover', (e) => {
-    const hot = (e.target as Element).closest('a, button, [data-cursor]');
-    ring.classList.toggle('hot', !!hot);
-  });
-  document.addEventListener('pointerleave', () => gsap.to([dot, ring], { opacity: 0 }));
-  document.addEventListener('pointerenter', () => gsap.to([dot, ring], { opacity: 1 }));
+  addEventListener('pointerdown', () => ring.classList.add('press'));
+  addEventListener('pointerup', () => ring.classList.remove('press'));
+  const root = document.documentElement;
+  root.addEventListener('pointerleave', () => root.classList.add('cursor-out'));
+  root.addEventListener('pointerenter', () => root.classList.remove('cursor-out'));
 }
