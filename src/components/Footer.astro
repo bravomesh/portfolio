@@ -7,29 +7,14 @@ import { profile } from '../data/site';
   <div class="container">
     <div class="row">
       <a href="#top" class="logo" aria-label="Back to top">MK<span>.</span></a>
-      <div class="clock mono">
-        <span class="live"></span>
-        <span>Nairobi</span>
-        <time id="nairobi-time">--:--</time>
-        <span class="tz">EAT · UTC+3</span>
-      </div>
       <a href="#top" class="top mono" data-magnetic>Back to top <Icon name="arrow" size={14} /></a>
     </div>
     <div class="row small mono">
       <span>© {new Date().getFullYear()} {profile.name}</span>
       <span>{profile.coords.lat.toFixed(4)}° · {profile.coords.lon.toFixed(4)}°</span>
-      <span>Built with Astro, D3 &amp; GSAP</span>
     </div>
   </div>
 </footer>
-
-<script>
-  const el = document.getElementById('nairobi-time')!;
-  const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
-  const tick = () => (el.textContent = fmt.format(new Date()));
-  tick();
-  setInterval(tick, 30_000);
-</script>
 
 <style>
   .footer {
@@ -51,24 +36,6 @@ import { profile } from '../data/site';
   }
   .logo span {
     color: var(--accent);
-  }
-  .clock {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-  }
-  .clock time {
-    color: var(--fg);
-    font-variant-numeric: tabular-nums;
-  }
-  .live {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #3ddc84;
   }
   .top {
     display: inline-flex;
