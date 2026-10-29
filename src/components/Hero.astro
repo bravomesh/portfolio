@@ -16,6 +16,7 @@ const countries = unionCountries(platforms).size;
       <span class="live"></span>
       {platforms.length} platforms · {countries} countries · live
     </div>
+    <div class="hint mono" data-intro>Drag to explore · click a beacon</div>
   </div>
 
   <div class="container inner">
@@ -46,14 +47,18 @@ const countries = unionCountries(platforms).size;
 
 <script>
   import { createGlobe } from '../scripts/globe';
-  import { gsap, reduced, introReady } from '../scripts/motion';
+  import { gsap, reduced, introReady, scrollToEl } from '../scripts/motion';
   import { platforms, home } from '../data/site';
-  import { unionCountries } from '../scripts/globe-math';
+  import { unionCountries, coverage } from '../scripts/globe-math';
 
+  const cover = coverage(platforms);
   const globe = createGlobe(document.getElementById('hero-globe') as HTMLCanvasElement, {
     view: home,
     highlight: unionCountries(platforms),
     beacons: platforms.map((p) => p.beacon),
+    interactive: true,
+    describe: (id) => cover.get(id)?.join(' · '),
+    onBeacon: (i) => scrollToEl(document.getElementById(`platform-${platforms[i].id}`)),
   });
   globe.spin(true);
 
@@ -84,6 +89,15 @@ const countries = unionCountries(platforms).size;
     position: relative;
     z-index: 2;
     align-self: center;
+  }
+  /* Let drags reach the globe through the text column; keep links clickable */
+  .inner,
+  .foot {
+    pointer-events: none;
+  }
+  .inner a,
+  .foot a {
+    pointer-events: auto;
   }
   .name {
     margin-top: 22px;
@@ -168,6 +182,28 @@ const countries = unionCountries(platforms).size;
     letter-spacing: 0.12em;
     font-size: 0.68rem;
     color: var(--muted);
+  }
+  .hud {
+    pointer-events: none;
+  }
+  .hint {
+    position: absolute;
+    left: 14%;
+    bottom: calc(10% + 46px);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .hint::before {
+    content: '↻ ';
+    color: var(--accent);
+  }
+  @media (pointer: coarse) {
+    .hint {
+      display: none;
+    }
   }
   .live,
   .pulse {

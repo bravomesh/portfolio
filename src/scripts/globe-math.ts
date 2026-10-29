@@ -12,3 +12,10 @@ export function interpolateView(a: View, b: View) {
     return { lon, lat, scale: a.scale * Math.pow(b.scale / a.scale, t) };
   };
 }
+
+/** Country id → names of the platforms that cover it (for globe tooltips). */
+export function coverage(ps: { name: string; countries: string[] }[]) {
+  const m = new Map<string, string[]>();
+  for (const p of ps) for (const c of p.countries) m.set(c, [...(m.get(c) ?? []), p.name]);
+  return m;
+}

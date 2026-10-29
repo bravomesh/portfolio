@@ -14,6 +14,13 @@ const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = doc
 
 let ready: Promise<void> | null = null;
 
+/** Smooth-scroll to an element (Lenis when available). */
+export function scrollToEl(el: Element | null, offset = 0) {
+  if (!el) return;
+  if (lenis) lenis.scrollTo(el as HTMLElement, { offset, duration: 1.6 });
+  else el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+}
+
 /** Resolves once the preloader starts leaving (or immediately when skipped). */
 export const introReady = () => (initMotion(), ready!);
 

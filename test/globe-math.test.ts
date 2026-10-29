@@ -18,3 +18,11 @@ test('interpolateView hits endpoints and zooms geometrically', () => {
   assert.ok(Math.abs(f(0.5).scale - 2) < 1e-9); // geometric mean, not 2.5
   assert.ok(Math.abs(f(0.5).lon - 45) < 1e-6);
 });
+
+test('coverage maps each country to the platforms that cover it', async () => {
+  const { coverage } = await import('../src/scripts/globe-math.ts');
+  const c = coverage(platforms);
+  assert.deepEqual(c.get('834'), ['East Africa Hazards Watch', 'SADC Hazards Watch']); // Tanzania is in IGAD and SADC
+  assert.deepEqual(c.get('800'), ['East Africa Hazards Watch', 'Uganda Hazards Watch']);
+  assert.equal(c.get('250'), undefined); // France
+});

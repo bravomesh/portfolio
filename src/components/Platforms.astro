@@ -114,9 +114,9 @@ const first = platforms[0];
 
 <script>
   import { createGlobe, loadHiRes } from '../scripts/globe';
-  import { gsap, ScrollTrigger } from '../scripts/motion';
+  import { gsap, ScrollTrigger, scrollToEl } from '../scripts/motion';
   import { platforms } from '../data/site';
-  import { unionCountries } from '../scripts/globe-math';
+  import { unionCountries, coverage } from '../scripts/globe-math';
 
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const cards = [...document.querySelectorAll<HTMLElement>('.platforms .card')];
@@ -135,6 +135,9 @@ const first = platforms[0];
     highlight: unionCountries(platforms),
     beacons: platforms.map((p) => p.beacon),
     detail: true,
+    interactive: true,
+    describe: (id) => coverage(platforms).get(id)?.join(' · '),
+    onBeacon: (i) => scrollToEl(cards[i]),
   });
   ScrollTrigger.create({ trigger: '.platforms', start: 'top bottom+=600', once: true, onEnter: () => loadHiRes() });
 
@@ -208,6 +211,7 @@ const first = platforms[0];
   }
   .corner {
     position: absolute;
+    pointer-events: none;
     width: 18px;
     height: 18px;
     border: 0 solid var(--accent);
@@ -219,6 +223,7 @@ const first = platforms[0];
 
   .hud {
     position: absolute;
+    pointer-events: none;
     left: 44px;
     right: 44px;
     display: flex;
