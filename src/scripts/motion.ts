@@ -15,7 +15,7 @@ const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = doc
 let ready: Promise<void> | null = null;
 
 /** Resolves once the preloader starts leaving (or immediately when skipped). */
-export const introReady = () => ready ?? Promise.resolve();
+export const introReady = () => (initMotion(), ready!);
 
 export function initMotion() {
   if (ready) return;

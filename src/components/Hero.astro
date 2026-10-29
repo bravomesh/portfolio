@@ -8,8 +8,10 @@ const countries = unionCountries(platforms).size;
 
 <section class="hero" id="top">
   <div class="globe-wrap" aria-hidden="true">
-    <div class="radar"></div>
-    <canvas id="hero-globe"></canvas>
+    <div class="globe-inner">
+      <div class="radar"></div>
+      <canvas id="hero-globe"></canvas>
+    </div>
     <div class="hud mono" data-intro>
       <span class="live"></span>
       {platforms.length} platforms · {countries} countries · live
@@ -41,6 +43,33 @@ const countries = unionCountries(platforms).size;
     </a>
   </div>
 </section>
+
+<script>
+  import { createGlobe } from '../scripts/globe';
+  import { gsap, reduced, introReady } from '../scripts/motion';
+  import { platforms, home } from '../data/site';
+  import { unionCountries } from '../scripts/globe-math';
+
+  const globe = createGlobe(document.getElementById('hero-globe') as HTMLCanvasElement, {
+    view: home,
+    highlight: unionCountries(platforms),
+    beacons: platforms.map((p) => p.beacon),
+  });
+  globe.spin(true);
+
+  if (!reduced) {
+    gsap.set('.globe-inner', { opacity: 0, scale: 0.82 });
+    introReady().then(() =>
+      gsap.to('.globe-inner', { opacity: 1, scale: 1, duration: 2.4, ease: 'expo.out', delay: 0.15 }),
+    );
+    gsap.to('.globe-wrap', {
+      yPercent: 22,
+      scale: 0.82,
+      ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
+    });
+  }
+</script>
 
 <style>
   .hero {
@@ -97,6 +126,10 @@ const countries = unionCountries(platforms).size;
     width: min(64vw, 940px);
     aspect-ratio: 1;
     translate: 0 -48%;
+  }
+  .globe-inner {
+    position: absolute;
+    inset: 0;
   }
   #hero-globe {
     position: absolute;
