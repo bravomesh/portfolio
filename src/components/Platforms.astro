@@ -1,6 +1,12 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Icon from './Icon.astro';
 import { platforms, stats } from '../data/site';
+
+const shots = import.meta.glob<{ default: ImageMetadata }>('../assets/platforms/*.png', { eager: true });
+const shot = (name?: string) => (name ? shots[`../assets/platforms/${name}.png`]?.default : undefined);
+const host = (url: string) => new URL(url).hostname;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const fmt = (lat: number, lon: number) =>
@@ -49,6 +55,21 @@ const first = platforms[0];
                 <p class="region mono">
                   {p.region} · {p.countries.length} {p.countries.length === 1 ? 'country' : 'countries'}
                 </p>
+                {shot(p.shot) && (
+                  <figure class="shot">
+                    <div class="bar">
+                      <i /><i /><i />
+                      <span class="mono">{host(p.url)}</span>
+                    </div>
+                    <Image
+                      src={shot(p.shot)!}
+                      alt={`${p.name} home page`}
+                      widths={[480, 800, 1200]}
+                      sizes="(max-width: 900px) 90vw, 34vw"
+                      loading="lazy"
+                    />
+                  </figure>
+                )}
                 <p class="summary">{p.summary}</p>
                 <dl class="facts">
                   <div>
@@ -271,6 +292,43 @@ const first = platforms[0];
   .region {
     margin-top: 14px;
     color: var(--accent);
+  }
+  .shot {
+    margin: 22px 0 0;
+    max-width: 520px;
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-3);
+    box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.5);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .bar i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-2);
+  }
+  .bar span {
+    margin-left: 8px;
+    font-size: 0.66rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .shot img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: top;
   }
   .summary {
     margin-top: 20px;

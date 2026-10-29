@@ -16,6 +16,7 @@ export type Platform = {
   summary: string;
   stack: string[];
   languages: string[];
+  shot?: string; // screenshot in src/assets/platforms/<shot>.png
 };
 
 export const profile = {
@@ -58,9 +59,10 @@ export const platforms: Platform[] = [
     url: 'https://eahazardswatch.icpac.net/mapviewer/',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'The regional multi-hazard early warning platform for the IGAD region — floods, drought, heat and more, monitored in near real time and linked to Drought Watch, Agriculture Watch and the ICPAC Geoportal.',
+      'The regional platform for monitoring extreme events across the Greater Horn — droughts, cyclones, desert locust infestations, heavy rainfall, floods and crop failures — with live extreme-rainfall, drought, agriculture and heat-stress layers.',
     stack: ['Django', 'Wagtail CMS', 'PostGIS', 'Earth Engine', 'Docker'], // VERIFY
     languages: ['English', 'Swahili', 'Amharic', 'Arabic', 'French', 'Kinyarwanda', 'Chinese', 'Somali'],
+    shot: 'eahw',
   },
   {
     id: 'sadc',
@@ -233,7 +235,7 @@ export const work = [
     desc: 'The main platform of the IGAD Climate Prediction & Applications Centre — seasonal outlooks, data and publications.',
     tags: ['Wagtail', 'Django', 'PostgreSQL', 'Docker'],
     href: 'https://www.icpac.net/',
-    img: null,
+    img: 'icpac',
   },
   {
     title: 'Breast Cancer Classifier',

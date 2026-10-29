@@ -20,6 +20,10 @@ export const introReady = () => (initMotion(), ready!);
 export function initMotion() {
   if (ready) return;
 
+  // Start at the top (so the intro plays), then honour deep links like #contact.
+  history.scrollRestoration = 'manual';
+  if (location.hash) scrollTo(0, 0);
+
   if (!reduced) {
     lenis = new Lenis({ anchors: true, lerp: 0.09 });
     lenis.on('scroll', ScrollTrigger.update);
@@ -33,9 +37,18 @@ export function initMotion() {
     intro();
     reveals();
     counters();
+    jumpToHash();
   });
+  addEventListener('hashchange', jumpToHash);
   magnetic();
   cursor();
+}
+
+function jumpToHash() {
+  const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if (!el) return;
+  if (lenis) lenis.scrollTo(el, { immediate: true, force: true });
+  else el.scrollIntoView();
 }
 
 function preloader(): Promise<void> {
