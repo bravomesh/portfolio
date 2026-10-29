@@ -45,7 +45,7 @@ export const home: View = { lon: 22, lat: 4, scale: 1 };
 const IGAD = ['108', '262', '232', '231', '404', '646', '706', '728', '729', '834', '800'];
 const SADC = ['024', '072', '174', '180', '748', '426', '450', '454', '480', '508', '516', '690', '710', '834', '894', '716'];
 
-const MHEWS_STACK = ['Django', 'Wagtail CMS', 'PostGIS', 'MapLibre GL', 'GCP Cloud Run']; // VERIFY
+const MHEWS_STACK = ['Django', 'Wagtail CMS', 'PostGIS', 'MapLibre GL', 'GCP Cloud Run']; // MapLibre + Cloud Run confirmed; VERIFY the rest
 
 export const platforms: Platform[] = [
   {
@@ -75,9 +75,10 @@ export const platforms: Platform[] = [
     url: 'https://sadc-int-mhews-413744588203.europe-west1.run.app/mapviewer/',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'Bringing the hazards-watch model to the 16 SADC member states — a shared map viewer for the Climate Services Centre, the Humanitarian & Emergency Operations Centre and the DRR Unit.',
+      'Bringing the hazards-watch model to the 16 SADC member states — a shared map viewer for the Climate Services Centre, the Humanitarian & Emergency Operations Centre and the DRR Unit, alongside partners such as UNDRR, MapAction, iMMAP, FEWS NET and CCARDESA.',
     stack: MHEWS_STACK,
     languages: ['English', 'Portuguese', 'French', 'Swahili'],
+    shot: 'sadc',
   },
   {
     id: 'somalia',
@@ -90,9 +91,10 @@ export const platforms: Platform[] = [
     url: 'https://somhews-gov-so-cms-web-413744588203.europe-west1.run.app/mapviewer/',
     role: 'ICPAC developers team — on-site at inception in Mogadishu',
     summary:
-      "S-MHEWS — Somalia's national multi-hazard early warning system, built on-site in Mogadishu with SoDMA. One real-time platform for monitoring, analysing and sharing warnings across five line ministries, in support of the Sendai Framework.",
+      "S-MHEWS — Somalia's national multi-hazard early warning system, built on-site in Mogadishu with SoDMA. A MapLibre map viewer with observation, forecast, drought, agriculture, hydrology, cyclone and environment layers — plus exposure analysis for population, cropland, rangeland and built-up areas.",
     stack: MHEWS_STACK,
     languages: ['Somali', 'Arabic', 'English', 'Oromo', 'Swahili'],
+    shot: 'somalia',
   },
   {
     id: 'djibouti',
@@ -112,7 +114,7 @@ export const platforms: Platform[] = [
   {
     id: 'uganda',
     name: 'Uganda Hazards Watch',
-    org: 'Government of Uganda · U-MHIEWS',
+    org: 'Government of Uganda · Office of the Prime Minister',
     region: 'Uganda',
     countries: ['800'],
     view: { lon: 32.4, lat: 1.3, scale: 6 },
@@ -120,9 +122,10 @@ export const platforms: Platform[] = [
     url: 'https://uganda-mhiews-go-ug-413744588203.europe-west1.run.app/mapviewer',
     role: 'Full-stack & geospatial developer', // VERIFY
     summary:
-      'The Uganda Multi-Hazard Impact-based Early Warning System, coordinated from the Office of the Prime Minister and connecting 15 ministries and agencies to impact-based forecasts.',
+      'U-MHIEWS — the Uganda Multi-Hazard Integrated Early Warning System, built to address several hazards and their impacts in a changing climate. Coordinated from the Office of the Prime Minister, it brings 15 ministries and agencies onto shared rainfall, landslide-susceptibility and drought data.',
     stack: MHEWS_STACK,
     languages: ['English', 'Luganda', 'Swahili'],
+    shot: 'uganda',
   },
 ];
 
@@ -224,10 +227,10 @@ export const work = [
   {
     title: 'East Africa Drought Watch',
     kind: 'Drought monitoring',
-    desc: 'Satellite-driven drought and agricultural monitoring delivering food-security intelligence across the region.',
+    desc: 'Monitors drought across East Africa with a combined drought indicator — rainfall and soil-moisture deficits — and drought-stress levels per country.',
     tags: ['Python', 'FastAPI', 'GDAL', 'PostgreSQL'],
     href: 'https://droughtwatch.icpac.net/',
-    img: null,
+    img: 'drought-watch',
   },
   {
     title: 'ICPAC.net',
