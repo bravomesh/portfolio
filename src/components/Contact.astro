@@ -138,28 +138,30 @@ import { profile } from '../data/site';
     mask: radial-gradient(circle, #000 30%, transparent 70%);
     pointer-events: none;
   }
+  /* Full-size thin ring scaled up from tiny, so the 1px line stays 1px */
   .contact :global(.ping) {
+    --size: 360px;
     position: absolute;
     z-index: 0;
-    width: 24px;
-    height: 24px;
-    margin: -12px 0 0 -12px;
+    width: var(--size);
+    height: var(--size);
+    margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
     border-radius: 50%;
     border: 1px solid var(--accent);
     pointer-events: none;
     animation: ping-out 1.6s var(--ease-out) forwards;
   }
   .contact :global(.ping.wide) {
+    --size: 150vmin;
     animation-duration: 3.6s;
-    --to: 60;
   }
   @keyframes ping-out {
     from {
-      scale: 1;
+      scale: 0.04;
       opacity: 0.9;
     }
     to {
-      scale: var(--to, 14);
+      scale: 1;
       opacity: 0;
     }
   }

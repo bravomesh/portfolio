@@ -121,7 +121,9 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
     invalidate();
   };
 
-  const geo = () => (opts.detail && hi ? hi : lo);
+  // Level of detail: the light 1:110m map while moving, the 1:50m one once the globe settles.
+  const moving = () => !!flight || !!drag || inertia;
+  const geo = () => (opts.detail && hi && !moving() ? hi : lo);
 
   function drawMap() {
     const g = geo();
@@ -349,6 +351,7 @@ export function createGlobe(canvas: HTMLCanvasElement, opts: GlobeOptions): Glob
     drag = null;
     canvas.classList.remove('grabbing');
     lastInteract = performance.now();
+    invalidate(); // redraw at full detail now that dragging stopped
     if (click) {
       const [x, y] = local(e);
       const b = beaconAt(x, y);

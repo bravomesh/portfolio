@@ -29,7 +29,8 @@ const links = [
       </button>
       <a href="#contact" class="btn cta" data-magnetic>Let's talk</a>
       <button class="icon-btn burger" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="menu">
-        <Icon name="menu" size={22} />
+        <span class="i-open"><Icon name="menu" size={22} /></span>
+        <span class="i-close"><Icon name="close" size={22} /></span>
       </button>
     </div>
   </div>
@@ -167,6 +168,21 @@ const links = [
   }
   .burger {
     display: none;
+  }
+  .burger > span {
+    grid-area: 1 / 1;
+    transition:
+      opacity 0.3s,
+      rotate 0.5s var(--ease-out);
+  }
+  .burger .i-close,
+  .burger[aria-expanded='true'] .i-open {
+    opacity: 0;
+    rotate: 90deg;
+  }
+  .burger[aria-expanded='true'] .i-close {
+    opacity: 1;
+    rotate: 0deg;
   }
 
   .menu {

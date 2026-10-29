@@ -136,8 +136,9 @@ const countries = unionCountries(platforms).size;
     position: absolute;
     z-index: 1;
     top: 50%;
-    right: max(-14vw, -220px);
-    width: min(64vw, 940px);
+    /* Tie the globe to the content column so wide screens don't open a gap */
+    right: max(-14vw, calc((100vw - 82.5rem) / 2 - 18.75rem));
+    width: min(64vw, 58.75rem);
     aspect-ratio: 1;
     translate: 0 -48%;
   }
@@ -200,7 +201,7 @@ const countries = unionCountries(platforms).size;
     content: '↻ ';
     color: var(--accent);
   }
-  @media (pointer: coarse) {
+  @media (pointer: coarse), (max-width: 900px) {
     .hint {
       display: none;
     }
