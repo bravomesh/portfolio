@@ -4,7 +4,6 @@ import { toolbox } from '../data/site';
 import { icons } from '../data/icons';
 
 const pad = (n: number) => String(n).padStart(2, '0');
-const n = toolbox.length;
 // Six pin slots per layer, nudged per layer so the stack doesn't look gridded.
 const slots = [
   [24, 30], [52, 22], [78, 34],
@@ -36,7 +35,7 @@ const slots = [
                   L{i + 1} · {t.short}
                 </span>
                 {t.items.slice(0, 6).map((name, j) => (
-                  <span class="pin" data-tool={name} style={`--x:${slots[j][0] + ((i * 7) % 9) - 4}%;--y:${slots[j][1] + ((i * 5) % 7) - 3}%`}>
+                  <span class="pin" data-tool={name} style={`--j:${j};--x:${slots[j][0] + ((i * 7) % 9) - 4}%;--y:${slots[j][1] + ((i * 5) % 7) - 3}%`}>
                     <span class="shadow" />
                     <span class="beam" />
                     <span class="bulb">
@@ -48,16 +47,23 @@ const slots = [
               </div>
             ))
           }
-          {[0, 1, 2].map((k) => <span class="packet" style={`--k:${k}`} />)}
+          <span class="spine"><i /></span>
         </div>
         <span class="io out mono">Decisions out ▼</span>
       </div>
 
       <div class="side">
-        <div class="meter mono" aria-hidden="true">
-          <span>Layer <b data-tb-index>01</b> / {pad(n)}</span>
-          <span class="segs">{toolbox.map(() => <i />)}</span>
-        </div>
+        <nav class="steps mono" aria-label="Toolbox layers">
+          {
+            toolbox.map((t, i) => (
+              <button type="button" class="step" data-step={i}>
+                <span class="sn">{pad(i + 1)}</span>
+                <span class="st">{t.short}</span>
+                <i class="sbar" />
+              </button>
+            ))
+          }
+        </nav>
         <div class="panels">
           {
             toolbox.map((t, i) => (
@@ -81,18 +87,18 @@ const slots = [
         </div>
       </div>
     </div>
+    <p class="cue mono" aria-hidden="true">Scroll to move through the layers <span>↓</span></p>
   </div>
 </section>
 
 <script>
-  import { gsap, ScrollTrigger } from '../scripts/motion';
+  import { gsap, ScrollTrigger, lenis } from '../scripts/motion';
 
   const root = document.querySelector<HTMLElement>('[data-tb]')!;
   const stack = root.querySelector<HTMLElement>('[data-stack]')!;
   const planes = [...root.querySelectorAll<HTMLElement>('[data-plane]')];
   const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
-  const segs = [...root.querySelectorAll<HTMLElement>('.segs i')];
-  const index = root.querySelector<HTMLElement>('[data-tb-index]')!;
+  const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
 
   let active = -1;
   const setActive = (i: number) => {
@@ -103,8 +109,11 @@ const slots = [
       p.classList.toggle('above', j < i); // layers above the active one peel away
     });
     panels.forEach((p, j) => p.classList.toggle('active', j === i));
-    segs.forEach((s, j) => s.classList.toggle('on', j <= i));
-    index.textContent = String(i + 1).padStart(2, '0');
+    steps.forEach((s, j) => {
+      s.classList.toggle('on', j === i);
+      s.classList.toggle('done', j < i);
+      s.setAttribute('aria-current', j === i ? 'step' : 'false');
+    });
   };
   setActive(0);
 
@@ -164,7 +173,8 @@ const slots = [
     };
     root.addEventListener('pointermove', onMove);
     root.addEventListener('pointerleave', onLeave);
-    gsap
+    const n = planes.length;
+    const tl = gsap
       .timeline({
         defaults: { onUpdate: apply },
         scrollTrigger: {
@@ -174,17 +184,35 @@ const slots = [
           pin: true,
           scrub: 1,
           refreshPriority: 1,
-          onUpdate: (self) => setActive(Math.min(planes.length - 1, Math.floor(self.progress * planes.length))),
+          onUpdate: (self) => {
+            const p = self.progress * n;
+            const i = Math.min(n - 1, Math.floor(p));
+            setActive(i);
+            // Each step's bar fills as you scroll through that layer.
+            steps.forEach((st, j) => st.style.setProperty('--p', j < i ? '1' : j > i ? '0' : String(Math.min(1, p - i))));
+            root.classList.toggle('moved', self.progress > 0.1);
+          },
         },
       })
       .to(s, { gap: 88, rx: 56, rz: -38, duration: 0.3, ease: 'power2.out' })
       .to(s, { rz: -28, duration: 0.7, ease: 'none' });
     ScrollTrigger.sort();
 
+    // Click a step to glide to the middle of that layer.
+    const onStep = (e: Event) => {
+      const st = tl.scrollTrigger!;
+      const i = Number((e.currentTarget as HTMLElement).dataset.step);
+      const y = st.start + (st.end - st.start) * ((i + 0.5) / n);
+      if (lenis) lenis.scrollTo(y, { duration: 1.2 });
+      else scrollTo({ top: y, behavior: 'smooth' });
+    };
+    steps.forEach((b) => b.addEventListener('click', onStep));
+
     return () => {
       root.removeEventListener('pointermove', onMove);
       root.removeEventListener('pointerleave', onLeave);
-      root.classList.remove('is-pinned');
+      steps.forEach((b) => b.removeEventListener('click', onStep));
+      root.classList.remove('is-pinned', 'moved');
       stack.style.removeProperty('--gap');
       stack.style.removeProperty('--rx');
       stack.style.removeProperty('--rz');
@@ -268,8 +296,28 @@ const slots = [
     opacity: 0.5;
   }
   .is-pinned .plane.above {
-    --lift: 70px;
-    opacity: 0.14;
+    --lift: 80px;
+    opacity: 0.1;
+  }
+  /* Only the active layer carries logos; the others are clean outlines with their label */
+  .pin {
+    transition: opacity 0.35s;
+  }
+  .is-pinned .plane:not(.active) .pin {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .is-pinned .plane:not(.active) .bulb {
+    scale: 0.3;
+  }
+  .is-pinned .plane.active .pin {
+    transition-delay: calc(0.12s + var(--j) * 0.06s);
+  }
+  .is-pinned .plane.active .bulb {
+    transition-delay: calc(0.12s + var(--j) * 0.06s), calc(0.12s + var(--j) * 0.06s), 0s, 0s;
+  }
+  .is-pinned .plane.active .pin.lit .bulb {
+    transition-delay: 0s; /* hover feedback is instant */
   }
   .plane.active {
     --lift: 34px;
@@ -401,38 +449,47 @@ const slots = [
     }
   }
 
-  /* Data packets falling through the stack */
-  .packet {
+  /* Data flow: one dashed spine through the stack with a soft pulse travelling down it */
+  .spine {
     position: absolute;
-    left: calc(30% + var(--k) * 22%);
-    top: calc(40% + var(--k) * 12%);
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px 2px var(--accent);
-    animation: fall 3.2s cubic-bezier(0.5, 0, 0.6, 1) infinite;
-    animation-delay: calc(var(--k) * -1.1s);
+    left: 50%;
+    bottom: 50%;
+    width: 1px;
+    height: calc(3 * var(--gap) * 1px + 120px);
+    transform-origin: 50% 100%;
+    transform: translateZ(calc(-1.5 * var(--gap) * 1px)) rotateX(-90deg);
+    background: repeating-linear-gradient(to top, var(--line-2) 0 5px, transparent 5px 11px);
+    pointer-events: none;
   }
-  @keyframes fall {
+  .spine i {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 3px;
+    height: 34px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, transparent, var(--accent));
+    box-shadow: 0 0 10px var(--accent-soft);
+    animation: travel 3.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  @keyframes travel {
     0% {
-      transform: translateZ(calc(1.5 * var(--gap) * 1px + 90px));
+      top: 0%;
       opacity: 0;
     }
-    15% {
-      opacity: 1;
-    }
-    85% {
-      opacity: 1;
+    15%,
+    80% {
+      opacity: 0.9;
     }
     100% {
-      transform: translateZ(calc(-1.5 * var(--gap) * 1px));
+      top: 92%;
       opacity: 0;
     }
   }
 
   /* ---------- side panel ---------- */
-  .meter {
+  .steps,
+  .cue {
     display: none;
   }
   .panels {
@@ -514,6 +571,7 @@ const slots = [
 
   /* ---------- pinned (desktop, motion OK) ---------- */
   .is-pinned {
+    position: relative;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -530,32 +588,84 @@ const slots = [
   .is-pinned .stack {
     width: min(30vw, 380px);
   }
-  .is-pinned .meter {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 28px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--muted);
+  /* Named, clickable steps with a bar that fills through each layer */
+  .is-pinned .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 30px;
   }
-  .is-pinned .meter b {
-    color: var(--fg);
-    font-weight: 500;
-  }
-  .segs {
-    display: flex;
+  .step {
+    display: grid;
     gap: 6px;
+    align-content: start;
+    padding: 0 0 10px;
+    text-align: left;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    transition: color 0.3s;
   }
-  .segs i {
-    width: 34px;
+  .step:hover,
+  .step.on {
+    color: var(--fg);
+  }
+  .sn {
+    color: var(--accent);
+    opacity: 0.6;
+  }
+  .step.on .sn {
+    opacity: 1;
+  }
+  .sbar {
+    position: relative;
     height: 2px;
+    margin-top: 4px;
     background: var(--line-2);
-    transition: background-color 0.4s;
+    overflow: hidden;
   }
-  .segs i.on {
+  .sbar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: var(--accent);
+    transform: scaleX(var(--p, 0));
+    transform-origin: left;
+  }
+  .step.done .sbar::after {
+    opacity: 0.55;
+  }
+
+  /* Scroll cue, shown until you start moving through the layers */
+  .is-pinned .cue {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    bottom: 26px;
+    translate: -50% 0;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: opacity 0.5s, translate 0.6s var(--ease-out);
+  }
+  .cue span {
+    color: var(--accent);
+    animation: bob 1.6s var(--ease-out) infinite;
+  }
+  @keyframes bob {
+    50% {
+      translate: 0 4px;
+    }
+  }
+  .is-pinned.moved .cue {
+    opacity: 0;
+    translate: -50% 10px;
   }
   .is-pinned .panels {
     display: grid;
