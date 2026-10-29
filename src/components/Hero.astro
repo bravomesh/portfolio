@@ -1,0 +1,251 @@
+---
+import Icon from './Icon.astro';
+import { profile, platforms } from '../data/site';
+import { unionCountries } from '../scripts/globe-math';
+
+const countries = unionCountries(platforms).size;
+---
+
+<section class="hero" id="top">
+  <div class="globe-wrap" aria-hidden="true">
+    <div class="radar"></div>
+    <canvas id="hero-globe"></canvas>
+    <div class="hud mono" data-intro>
+      <span class="live"></span>
+      {platforms.length} platforms · {countries} countries · live
+    </div>
+  </div>
+
+  <div class="container inner">
+    <p class="eyebrow" data-intro>{profile.role}</p>
+    <h1 class="name" data-intro data-intro-name>{profile.first}<br /><em>{profile.last}</em></h1>
+    <p class="headline" data-intro set:html={profile.headline} />
+    <p class="pitch" data-intro>{profile.pitch}</p>
+    <div class="actions" data-intro>
+      <a href="#platforms" class="btn" data-magnetic>Explore the platforms <Icon name="arrow-down" /></a>
+      <a href={profile.cv} class="btn btn--ghost" target="_blank" rel="noopener noreferrer" data-magnetic>
+        Download CV <Icon name="download" />
+      </a>
+    </div>
+  </div>
+
+  <div class="container foot" data-intro>
+    <dl class="meta">
+      <div><dt>Based in</dt><dd>{profile.location}</dd></div>
+      <div><dt>Focus</dt><dd>Early warning · GIS · AI</dd></div>
+      <div><dt>Experience</dt><dd>{profile.experience}</dd></div>
+      <div><dt>Status</dt><dd><span class="pulse"></span>{profile.status}</dd></div>
+    </dl>
+    <a href="#about" class="scroll mono" aria-label="Scroll to about">
+      <span class="line"></span> Scroll
+    </a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-top: calc(var(--nav-h) + 4vh);
+    overflow: clip;
+  }
+  .inner {
+    position: relative;
+    z-index: 2;
+    align-self: center;
+  }
+  .name {
+    margin-top: 22px;
+    font: 400 clamp(4.4rem, 14vw, 12.5rem) / 0.86 var(--f-display);
+    letter-spacing: -0.035em;
+  }
+  .name em {
+    font-style: italic;
+    color: var(--accent);
+    padding-right: 0.05em;
+  }
+  .headline {
+    max-width: 22ch;
+    margin-top: 32px;
+    font: 400 clamp(1.5rem, 2.6vw, 2.2rem) / 1.15 var(--f-display);
+  }
+  .headline :global(em) {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .pitch {
+    max-width: 50ch;
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  /* Globe */
+  .globe-wrap {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: max(-14vw, -220px);
+    width: min(64vw, 940px);
+    aspect-ratio: 1;
+    translate: 0 -48%;
+  }
+  #hero-globe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .radar {
+    position: absolute;
+    inset: -6%;
+    border-radius: 50%;
+    background:
+      repeating-radial-gradient(circle, transparent 0 calc(12.5% - 1px), var(--line) calc(12.5% - 1px) 12.5%),
+      conic-gradient(from 0deg, var(--accent-soft), transparent 70deg);
+    mask: radial-gradient(circle, #000 55%, transparent 71%);
+    animation: sweep 7s linear infinite;
+  }
+  @keyframes sweep {
+    to {
+      rotate: 1turn;
+    }
+  }
+  .hud {
+    position: absolute;
+    left: 14%;
+    bottom: 10%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(8px);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .live,
+  .pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: ping 2s var(--ease-out) infinite;
+  }
+  .pulse {
+    display: inline-block;
+    margin-right: 8px;
+    background: #3ddc84;
+    vertical-align: 1px;
+    animation-name: ping-green;
+  }
+  @keyframes ping {
+    70%,
+    100% {
+      box-shadow: 0 0 0 10px transparent;
+    }
+    0% {
+      box-shadow: 0 0 0 0 var(--accent);
+    }
+  }
+  @keyframes ping-green {
+    0% {
+      box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.6);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 10px transparent;
+    }
+  }
+
+  /* Footer row */
+  .foot {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-block: 36px 32px;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 44px;
+    margin: 0;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+  .meta dt {
+    font: 500 0.68rem/1 var(--f-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta dd {
+    margin: 8px 0 0;
+    font-size: 0.92rem;
+  }
+  .scroll {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    writing-mode: vertical-rl;
+  }
+  .scroll .line {
+    position: relative;
+    width: 1px;
+    height: 56px;
+    background: var(--line-2);
+    overflow: hidden;
+  }
+  .scroll .line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    animation: drip 2.2s var(--ease-out) infinite;
+  }
+  @keyframes drip {
+    0% {
+      translate: 0 -100%;
+    }
+    60%,
+    100% {
+      translate: 0 100%;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .globe-wrap {
+      top: auto;
+      bottom: 22%;
+      right: -40%;
+      width: 115vw;
+      translate: none;
+      opacity: 0.55;
+    }
+    .hud {
+      display: none;
+    }
+    .scroll {
+      display: none;
+    }
+  }
+</style>

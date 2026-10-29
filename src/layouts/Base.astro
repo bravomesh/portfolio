@@ -38,12 +38,115 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         let t;
         try { t = localStorage.getItem('theme'); } catch {}
         t ||= matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        const c = document.documentElement.classList;
         document.documentElement.dataset.theme = t;
+        c.add('js');
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) c.add('reduced');
+        try { if (sessionStorage.getItem('seen')) c.add('seen'); } catch {}
       })();
     </script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
+
+    <div class="preloader" id="preloader" aria-hidden="true">
+      <div class="pl-inner">
+        <div class="pl-coords"><span data-lat>0.0000</span>°S&nbsp;&nbsp;<span data-lon>0.0000</span>°E</div>
+        <div class="pl-bar"><i></i></div>
+        <div class="pl-label mono">
+          <span>Locating</span><span>{profile.location}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+
     <slot />
+
+    <script>
+      import { initMotion } from '../scripts/motion';
+      initMotion();
+    </script>
   </body>
 </html>
+
+<style is:global>
+  .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+  }
+  .seen .preloader,
+  .reduced .preloader {
+    display: none;
+  }
+  .pl-inner {
+    width: min(420px, 80vw);
+    display: grid;
+    gap: 18px;
+  }
+  .pl-coords {
+    font: 400 clamp(2rem, 7vw, 3.4rem) / 1 var(--f-display);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .pl-bar {
+    height: 1px;
+    background: var(--line-2);
+  }
+  .pl-bar i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .pl-label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  /* Hero intro elements wait for the intro timeline */
+  .js:not(.reduced) [data-intro] {
+    opacity: 0;
+  }
+
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
+  }
+  .has-cursor .cursor-dot,
+  .has-cursor .cursor-ring {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    pointer-events: none;
+    border-radius: 50%;
+  }
+  .has-cursor .cursor-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+  }
+  .has-cursor .cursor-ring {
+    width: 38px;
+    height: 38px;
+    border: 1px solid color-mix(in srgb, var(--fg) 40%, transparent);
+    transition: width 0.4s var(--ease-out), height 0.4s var(--ease-out), background-color 0.4s, border-color 0.4s;
+  }
+  .has-cursor .cursor-ring.hot {
+    width: 64px;
+    height: 64px;
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+</style>

@@ -23,7 +23,7 @@ export const profile = {
   first: 'Meshack',
   last: 'Kibet',
   role: 'Software Engineer → GIS & AI',
-  headline: 'I build the software that warns nations before disasters strike.',
+  headline: 'I build the software that <em>warns nations</em> before disasters strike.',
   pitch:
     'Software engineer turned geospatial & AI developer. I build multi-hazard early warning platforms that turn satellite and climate data into decisions — live across 26 African countries.',
   location: 'Nairobi, Kenya',

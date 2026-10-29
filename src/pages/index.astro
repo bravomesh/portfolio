@@ -1,14 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
 ---
 
 <Base>
   <Nav />
   <main id="main">
-    <section id="top" class="section container"><h1 class="h2">Meshack <em>Kibet</em></h1></section>
+    <Hero />
     {['about', 'platforms', 'toolbox', 'experience', 'work', 'contact'].map((id) => (
-      <section id={id} class="section container" style="min-height:80vh"><span class="eyebrow">{id}</span></section>
+      <section id={id} class="section container" style="min-height:80vh"><span class="eyebrow">{id}</span><h2 class="h2" data-split>Placeholder heading for <em>{id}</em> section</h2></section>
     ))}
   </main>
 </Base>
