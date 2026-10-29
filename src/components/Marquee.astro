@@ -1,0 +1,90 @@
+---
+import { partners } from '../data/site';
+---
+
+<section class="marquee" aria-label="Organisations I've built platforms for">
+  <p class="label mono">Platforms built for</p>
+  <div class="track">
+    {
+      [0, 1].map((copy) => (
+        <ul aria-hidden={copy === 1 ? 'true' : undefined}>
+          {partners.map((p) => (
+            <li>
+              <span>{p}</span>
+              <i>✦</i>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .marquee {
+    position: relative;
+    padding-block: 34px;
+    border-block: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .label {
+    position: absolute;
+    top: 50%;
+    left: var(--gutter);
+    z-index: 2;
+    translate: 0 -50%;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px var(--line-2);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.66rem;
+    color: var(--muted);
+  }
+  .track {
+    display: flex;
+    width: max-content;
+    animation: scroll 46s linear infinite;
+    mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+  ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding-right: 40px;
+    font: italic 400 clamp(1.8rem, 3.6vw, 3rem) / 1 var(--f-display);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  li span {
+    transition: color 0.4s;
+  }
+  li span:hover {
+    color: var(--fg);
+  }
+  li i {
+    font-style: normal;
+    font-size: 0.5em;
+    color: var(--accent);
+  }
+  @keyframes scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (max-width: 700px) {
+    .label {
+      display: none;
+    }
+  }
+</style>

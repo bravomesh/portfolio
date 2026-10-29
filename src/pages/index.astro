@@ -2,16 +2,24 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import About from '../components/About.astro';
 import Platforms from '../components/Platforms.astro';
+import Toolbox from '../components/Toolbox.astro';
+import Experience from '../components/Experience.astro';
+import Work from '../components/Work.astro';
 ---
 
 <Base>
   <Nav />
   <main id="main">
     <Hero />
+    <Marquee />
+    <About />
     <Platforms />
-    {['about', 'toolbox', 'experience', 'work', 'contact'].map((id) => (
-      <section id={id} class="section container" style="min-height:80vh"><span class="eyebrow">{id}</span><h2 class="h2" data-split>Placeholder heading for <em>{id}</em> section</h2></section>
-    ))}
+    <Toolbox />
+    <Experience />
+    <Work />
+    <section id="contact" class="section container" style="min-height:80vh"><span class="eyebrow">contact</span></section>
   </main>
 </Base>

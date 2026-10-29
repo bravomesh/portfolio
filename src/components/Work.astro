@@ -1,0 +1,220 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import { work } from '../data/site';
+
+const imgs = import.meta.glob<{ default: ImageMetadata }>('../assets/work/*.png', { eager: true });
+const img = (name: string | null) => (name ? imgs[`../assets/work/${name}.png`]?.default : undefined);
+---
+
+<section class="section work" id="work">
+  <div class="container">
+    <header class="head">
+      <span class="eyebrow" data-reveal>05 — More work</span>
+      <h2 class="h2" data-split>Other things I've <em>shipped</em>.</h2>
+    </header>
+
+    <ul class="list" data-work>
+      {
+        work.map((w, i) => {
+          const src = img(w.img);
+          return (
+            <li data-reveal>
+              <a href={w.href} target="_blank" rel="noopener noreferrer" data-preview={src ? i : undefined}>
+                <span class="mono n">{String(i + 1).padStart(2, '0')}</span>
+                <span class="title">
+                  <span class="t">{w.title}</span>
+                  <span class="desc">{w.desc}</span>
+                </span>
+                <span class="kind mono">{w.kind}</span>
+                <span class="arrow">
+                  <Icon name="arrow" size={22} />
+                </span>
+                {src && (
+                  <span class="thumb">
+                    <Image src={src} alt="" widths={[480, 800]} sizes="90vw" loading="lazy" />
+                  </span>
+                )}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+
+  <div class="preview" aria-hidden="true">
+    {
+      work.map((w, i) => {
+        const src = img(w.img);
+        return src && <Image src={src} alt="" width={520} data-i={i} loading="lazy" />;
+      })
+    }
+  </div>
+</section>
+
+<script>
+  import { gsap, reduced } from '../scripts/motion';
+
+  const preview = document.querySelector<HTMLElement>('.work .preview')!;
+  if (!reduced && matchMedia('(pointer: fine)').matches) {
+    const x = gsap.quickTo(preview, 'x', { duration: 0.7, ease: 'power3.out' });
+    const y = gsap.quickTo(preview, 'y', { duration: 0.7, ease: 'power3.out' });
+    const rot = gsap.quickTo(preview, 'rotation', { duration: 0.8, ease: 'power3.out' });
+    let lastX = 0;
+    addEventListener('pointermove', (e) => {
+      x(e.clientX);
+      y(e.clientY);
+      rot(gsap.utils.clamp(-8, 8, (e.clientX - lastX) * 0.6));
+      lastX = e.clientX;
+    });
+    document.querySelectorAll<HTMLElement>('[data-work] a').forEach((a) => {
+      a.addEventListener('pointerenter', () => {
+        const i = a.dataset.preview;
+        preview.querySelectorAll('img').forEach((im) => im.classList.toggle('on', im.dataset.i === i));
+        preview.classList.toggle('show', i !== undefined);
+      });
+      a.addEventListener('pointerleave', () => preview.classList.remove('show'));
+    });
+  }
+</script>
+
+<style>
+  .list {
+    margin: clamp(48px, 7vw, 96px) 0 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .list a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 60px 1fr auto 40px;
+    align-items: center;
+    gap: 24px;
+    padding: 30px 8px;
+    border-top: 1px solid var(--line);
+    transition: padding 0.6s var(--ease-out);
+  }
+  .list a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--bg-2);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .list a:hover {
+    padding-inline: 28px;
+  }
+  .list a:hover::before {
+    transform: none;
+    transform-origin: top;
+  }
+  .n {
+    color: var(--muted);
+  }
+  .title {
+    display: grid;
+    gap: 6px;
+  }
+  .t {
+    font: 400 clamp(1.7rem, 3.4vw, 2.8rem) / 1.05 var(--f-display);
+    transition: color 0.4s;
+  }
+  .list a:hover .t {
+    color: var(--accent);
+  }
+  .desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 60ch;
+  }
+  .kind {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .arrow {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    transition: background-color 0.4s, color 0.4s, rotate 0.6s var(--ease-out);
+  }
+  .list a:hover .arrow {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    rotate: 45deg;
+  }
+  .thumb {
+    display: none;
+  }
+
+  .preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    width: 340px;
+    aspect-ratio: 16 / 10;
+    margin: -110px 0 0 -170px;
+    border-radius: 14px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    scale: 0.6;
+    transition: opacity 0.4s, scale 0.6s var(--ease-out);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+  }
+  .preview.show {
+    opacity: 1;
+    scale: 1;
+  }
+  .preview img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .preview img.on {
+    opacity: 1;
+  }
+
+  @media (max-width: 760px), (pointer: coarse) {
+    .list a {
+      grid-template-columns: 1fr 40px;
+      gap: 12px 16px;
+    }
+    .n,
+    .kind {
+      display: none;
+    }
+    .thumb {
+      display: block;
+      grid-column: 1 / -1;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+    }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+    .preview {
+      display: none;
+    }
+  }
+</style>

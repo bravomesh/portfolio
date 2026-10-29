@@ -1,0 +1,160 @@
+---
+import { experience } from '../data/site';
+---
+
+<section class="section experience" id="experience">
+  <div class="container">
+    <header class="head">
+      <span class="eyebrow" data-reveal>04 — Experience</span>
+      <h2 class="h2" data-split>Where the <em>work</em> happens.</h2>
+    </header>
+
+    <ol class="timeline" data-timeline>
+      <span class="rail" aria-hidden="true"><i></i></span>
+      {
+        experience.map((e) => (
+          <li data-reveal>
+            <div class="when">
+              <span class="mono">{e.period}</span>
+              {e.current && <span class="badge mono">Current</span>}
+            </div>
+            <div class="what">
+              <h3>{e.role}</h3>
+              <p class="org">{e.org}</p>
+              <ul>
+                {e.points.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { gsap, reduced } from '../scripts/motion';
+
+  if (!reduced) {
+    const tl = document.querySelector('[data-timeline]')!;
+    gsap.fromTo(
+      tl.querySelector('.rail i'),
+      { scaleY: 0 },
+      { scaleY: 1, ease: 'none', scrollTrigger: { trigger: tl, start: 'top 70%', end: 'bottom 60%', scrub: true } },
+    );
+  }
+</script>
+
+<style>
+  .timeline {
+    position: relative;
+    margin: clamp(48px, 7vw, 96px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(28% - 1px);
+    width: 1px;
+    background: var(--line);
+  }
+  .rail i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: top;
+  }
+  .timeline > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28% 1fr;
+    padding-block: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .timeline > li::before {
+    content: '';
+    position: absolute;
+    top: 46px;
+    left: calc(28% - 6px);
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+  }
+  .when {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding-right: 32px;
+    color: var(--muted);
+  }
+  .badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .what {
+    padding-left: 48px;
+  }
+  h3 {
+    font: 400 clamp(1.9rem, 3vw, 2.8rem) / 1.05 var(--f-display);
+  }
+  .org {
+    margin-top: 8px;
+    color: var(--accent);
+  }
+  .what ul {
+    display: grid;
+    gap: 10px;
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    max-width: 64ch;
+  }
+  .what ul li {
+    position: relative;
+    padding-left: 22px;
+  }
+  .what ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.8em;
+    width: 10px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  @media (max-width: 760px) {
+    .rail {
+      left: 5px;
+    }
+    .timeline > li {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding-left: 32px;
+    }
+    .timeline > li::before {
+      left: 0;
+      top: 44px;
+    }
+    .when {
+      flex-direction: row;
+      align-items: center;
+    }
+    .what {
+      padding-left: 0;
+    }
+  }
+</style>

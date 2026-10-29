@@ -1,0 +1,148 @@
+---
+import Icon from './Icon.astro';
+import { toolbox } from '../data/site';
+---
+
+<section class="section toolbox" id="toolbox">
+  <div class="container">
+    <header class="head">
+      <span class="eyebrow" data-reveal>03 — Toolbox</span>
+      <h2 class="h2" data-split>Satellites in, <em>decisions</em> out.</h2>
+      <p class="lead" data-reveal>
+        The stack behind the platforms — from Earth-observation pipelines and models to the APIs, interfaces and
+        infrastructure that serve them.
+      </p>
+    </header>
+
+    <div class="bento" data-stagger>
+      {
+        toolbox.map((t, i) => (
+          <article class="tile" data-tile>
+            <div class="tile-top">
+              <span class="icon">
+                <Icon name={t.icon} size={22} />
+              </span>
+              <span class="mono n">0{i + 1}</span>
+            </div>
+            <h3>{t.title}</h3>
+            <p>{t.blurb}</p>
+            <ul class="chips">
+              {t.items.map((s) => (
+                <li>{s}</li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tile]').forEach((tile) =>
+    tile.addEventListener('pointermove', (e) => {
+      const r = tile.getBoundingClientRect();
+      tile.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      tile.style.setProperty('--my', `${e.clientY - r.top}px`);
+    }),
+  );
+</script>
+
+<style>
+  .head {
+    max-width: 860px;
+  }
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+    margin-top: clamp(48px, 7vw, 96px);
+  }
+  .tile {
+    --mx: 50%;
+    --my: 0%;
+    position: relative;
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 320px;
+    padding: clamp(24px, 3vw, 40px);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .tile:nth-child(1),
+  .tile:nth-child(4) {
+    grid-column: span 7;
+  }
+  .tile:nth-child(2),
+  .tile:nth-child(3) {
+    grid-column: span 5;
+  }
+  /* Border + spotlight that follow the cursor */
+  .tile::before,
+  .tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .tile::before {
+    z-index: -1;
+    background: radial-gradient(420px circle at var(--mx) var(--my), var(--accent-soft), transparent 60%);
+    opacity: 0;
+  }
+  .tile::after {
+    padding: 1px;
+    background:
+      radial-gradient(300px circle at var(--mx) var(--my), var(--accent), transparent 70%),
+      var(--line);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+  .tile:hover::before {
+    opacity: 1;
+  }
+  .tile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: auto;
+    padding-bottom: 28px;
+  }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    color: var(--accent);
+  }
+  .n {
+    color: var(--muted);
+  }
+  h3 {
+    font: 400 clamp(1.8rem, 2.6vw, 2.4rem) / 1.05 var(--f-display);
+  }
+  .tile > p {
+    color: var(--muted);
+  }
+  .chips {
+    margin-top: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .tile,
+    .tile:nth-child(n) {
+      grid-column: 1 / -1;
+      min-height: 0;
+    }
+  }
+</style>
